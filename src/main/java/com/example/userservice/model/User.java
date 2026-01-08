@@ -123,8 +123,6 @@ public class User {
 				+ ", fechaNacimiento=" + fechaNacimiento + ", pedidos=" + pedidos + ", email=" + email + ", activo="
 				+ activo + ", rol=" + rol + "]";
 	}
-	
-	
-	
+
 	
 }

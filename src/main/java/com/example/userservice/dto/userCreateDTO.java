@@ -1,20 +1,17 @@
 package com.example.userservice.dto;
 
-
-
-public class userCreateDTO {
-	
+public class UserCreateDTO {
 	
 	private String nombre;
 	private String apellido;
 	private String email;
 	private String password;
 	
-	public userCreateDTO() {
+	public UserCreateDTO() {
 		super();
 	}
 
-	public userCreateDTO(Long idUsuario, String nombre, String apellido, String email) {
+	public UserCreateDTO(Long idUsuario, String nombre, String apellido, String email) {
 		super();
 		this.nombre = nombre;
 		this.apellido = apellido;
