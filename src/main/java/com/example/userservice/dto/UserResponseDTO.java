@@ -5,63 +5,57 @@ import java.util.List;
 
 public class UserResponseDTO {
 
-	private Long idUsuario;
-	private String nombre;
-	private String apellido;
-	private List<Long> pedidos;
-	private String email;
-	
-	public UserResponseDTO() {
-		super();
-		this.pedidos = new ArrayList<>();
-	}
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private List<Long> orderIds;
+    private String email;
 
-	public UserResponseDTO(Long idUsuario, String nombre, String apellido, String email) {
-		super();
-		this.idUsuario = idUsuario;
-		this.nombre = nombre;
-		this.apellido = apellido;
-		this.email = email;
-		this.pedidos = new ArrayList<>();
-	}
+    public UserResponseDTO() {
+        this.orderIds = new ArrayList<>();
+    }
 
-	public String getNombre() {
-		return nombre;
-	}
+    public UserResponseDTO(Long id, String firstName, String lastName, String email) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.orderIds = new ArrayList<>();
+    }
 
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getApellido() {
-		return apellido;
-	}
+    public String getFirstName() {
+        return firstName;
+    }
 
-	public void setApellido(String apellido) {
-		this.apellido = apellido;
-	}
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-	public List<Long> getPedidos() {
-		return pedidos;
-	}
+    public String getLastName() {
+        return lastName;
+    }
 
-	public void setPedidos(List<Long> pedidos) {
-		this.pedidos = pedidos;
-	}
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public List<Long> getOrderIds() {
+        return orderIds;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setOrderIds(List<Long> orderIds) {
+        this.orderIds = orderIds;
+    }
 
-	public Long getIdUsuario() {
-		return idUsuario;
-	}
-	
-	
-	
-	
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

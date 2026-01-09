@@ -1,52 +1,80 @@
 package com.example.userservice.dto;
 
+import java.time.LocalDate;
+
+import com.example.userservice.model.Role;
+
 public class UserCreateDTO {
-	
-	private String nombre;
-	private String apellido;
-	private String email;
-	private String password;
-	
-	public UserCreateDTO() {
+
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String password;
+    private LocalDate birthDate;
+    private Role role; // o asignarlo fijo en el service
+
+    public UserCreateDTO() {
+    }
+
+    public UserCreateDTO(String firstName, String lastName, String email, String password, LocalDate birthDate,
+			Role role) {
 		super();
-	}
-
-	public UserCreateDTO(Long idUsuario, String nombre, String apellido, String email) {
-		super();
-		this.nombre = nombre;
-		this.apellido = apellido;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.email = email;
-	}
-
-	public String getNombre() {
-		return nombre;
-	}
-
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
-	}
-
-	public String getApellido() {
-		return apellido;
-	}
-
-	public void setApellido(String apellido) {
-		this.apellido = apellido;
-	}
-	
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
 		this.password = password;
+		this.birthDate = birthDate;
+		this.role = role;
 	}
-	
-	
+
+	public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+    
+    
+    
 }

@@ -1,14 +1,12 @@
 package com.example.userservice.service;
 
 import java.util.List;
-import java.util.Optional;
-
-import org.apache.catalina.mapper.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.userservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.example.userservice.dto.*;
 import com.example.userservice.model.User;
+import com.example.userservice.mapper.*;
 
 @Service
 public class UserService {
@@ -16,10 +14,12 @@ public class UserService {
 	@Autowired
 	private UserRepository repository;
 	
+	@Autowired
+	private Mapper mapper;
 	
-	
-	public UserService(UserRepository repository) {
+	public UserService(UserRepository repository, Mapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 	
 	//POST
@@ -74,10 +74,8 @@ public class UserService {
 	}
 
 	
-	//REPASAR TODO EL CRUD 
-	//CONVERSION DE NOMBRES A INGLES (ATRIBUTOS)
-	//REALIZAR MAPPER
+	
 
-	//DELETE
+
 	
 }
