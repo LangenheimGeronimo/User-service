@@ -11,15 +11,15 @@ import com.example.userservice.mapper.*;
 @Service
 public class UserService {
 	
-	@Autowired
+	//@Autowired
 	private UserRepository repository;
 	
 	@Autowired
-	private Mapper mapper;
+	private Mapper UserMapper;
 	
-	public UserService(UserRepository repository, Mapper mapper) {
+	public UserService(UserRepository repository, Mapper UserMapper) {
         this.repository = repository;
-        this.mapper = mapper;
+        this.UserMapper = UserMapper;
     }
 	
 	//POST
@@ -29,11 +29,11 @@ public class UserService {
 			 throw new IllegalArgumentException("Email already in use");
 		}
 		
-		User userEntity = mapper.toEntity(dto);
+		User userEntity = UserMapper.toEntity(dto);
 		User savedUser = repository.save(userEntity);	
 		
 		
-		return mapper.toDto(savedUser);
+		return UserMapper.toDto(savedUser);
 		
 	}
 	
@@ -41,14 +41,15 @@ public class UserService {
 	public UserResponseDTO getUser(Long idUser) {
 		User user = repository.findById(idUser).orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
-	    return mapper.toDto(user);
+	    return UserMapper.toDto(user);
 	}
 	
 	public List<UserResponseDTO> getUsers (){
-		return  repository.findAll().stream().map(mapper::toDto).toList(); 
+		return  repository.findAll().stream().map(UserMapper::toDto).toList(); 
 	}
 	
 	// PUT
+	//Falta verificacion
 	public UserResponseDTO editUser(Long idUser, UserCreateDTO dto) {
 
 	    User user = repository.findById(idUser).orElseThrow(() -> new IllegalArgumentException("User not exists"));
@@ -60,18 +61,17 @@ public class UserService {
 
 	    User updatedUser = repository.save(user);
 
-	    return mapper.toDto(updatedUser);
+	    return UserMapper.toDto(updatedUser);
 	}
 	
 	//DELETE
 	public void deleteUser(Long idUser) {
+	    User user = repository.findById(idUser)
+	        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
-	    if (!repository.existsById(idUser)) {
-	        throw new IllegalArgumentException("User not exists");
-	    }
-
-	    repository.deleteById(idUser);
+	    repository.delete(user);
 	}
+
 
 	
 	
