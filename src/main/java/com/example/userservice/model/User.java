@@ -35,6 +35,9 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role role; 
 	
+	@Enumerated(EnumType.STRING)
+	private State state; 
+	
 	private String password;
 	
 	public User() {
@@ -43,7 +46,7 @@ public class User {
 	}
 
 	public User(Long id, String firstName, String lastName, LocalDate birthDate,
-            String email, boolean active, Role role, String password) {
+            String email, boolean active, Role role, State state, String password) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
@@ -51,6 +54,7 @@ public class User {
     this.email = email;
     this.active = active;
     this.role = role;
+    this.state = state;
     this.password = password;
     this.orderIds = new ArrayList<>();
 }
@@ -121,7 +125,15 @@ public class User {
         this.role = role;
     }
 
-    public String getPassword() {
+    public State getState() {
+		return state;
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
+
+	public String getPassword() {
         return password;
     }
 
@@ -130,5 +142,7 @@ public class User {
     }
 }
 
-	
+	// FINALIZAR CONTROLLER
+	// HACER RESPASO Y ENTENDIMIENTO COMPLETO
+	// COMPLETAR CASOS DE USO
 

@@ -3,7 +3,7 @@ package com.example.userservice.mapper;
 import com.example.userservice.model.User;
 import com.example.userservice.dto.*;
 
-public class Mapper {
+public class UserMapper {
 	
 	public User toEntity(UserCreateDTO dto) {
 		User user = new User();

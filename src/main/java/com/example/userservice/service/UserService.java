@@ -1,10 +1,10 @@
 package com.example.userservice.service;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.example.userservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.example.userservice.dto.*;
+import com.example.userservice.model.State;
 import com.example.userservice.model.User;
 import com.example.userservice.mapper.*;
 
@@ -12,48 +12,58 @@ import com.example.userservice.mapper.*;
 public class UserService {
 	
 	//@Autowired
-	private UserRepository repository;
+	private final UserRepository repository;
 	
-	@Autowired
-	private Mapper UserMapper;
+	//@Autowired
+	private final UserMapper userMapper;
 	
-	public UserService(UserRepository repository, Mapper UserMapper) {
+	public UserService(UserRepository repository, UserMapper userMapper) {
         this.repository = repository;
-        this.UserMapper = UserMapper;
+        this.userMapper = userMapper;
     }
 	
 	//POST
-	public UserResponseDTO createUser(UserCreateDTO dto) {
+	public UserResponseDTO createUser(UserCreateDTO dto) { 
 		
 		if(repository.existsByEmail(dto.getEmail())) {
 			 throw new IllegalArgumentException("Email already in use");
 		}
 		
-		User userEntity = UserMapper.toEntity(dto);
+		User userEntity = userMapper.toEntity(dto);
+		userEntity.setState(State.ACTIVE);
 		User savedUser = repository.save(userEntity);	
 		
 		
-		return UserMapper.toDto(savedUser);
+		return userMapper.toDto(savedUser);
 		
 	}
 	
 	//GET
 	public UserResponseDTO getUser(Long idUser) {
+		
 		User user = repository.findById(idUser).orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
-	    return UserMapper.toDto(user);
+	    return userMapper.toDto(user);
 	}
 	
 	public List<UserResponseDTO> getUsers (){
-		return  repository.findAll().stream().map(UserMapper::toDto).toList(); 
+		return  repository.findAll().stream().map(userMapper::toDto).toList(); 
 	}
 	
 	// PUT
-	//Falta verificacion
 	public UserResponseDTO editUser(Long idUser, UserCreateDTO dto) {
 
 	    User user = repository.findById(idUser).orElseThrow(() -> new IllegalArgumentException("User not exists"));
+	    
+	    if(user.getState() == State.DELETED) {
+	    	throw new IllegalStateException("User already deleted");
+	    }
 
+	    if (!user.getEmail().equals(dto.getEmail()) && repository.existsByEmail(dto.getEmail())) {
+	    	   throw new IllegalArgumentException("Email already exists");
+	    }
+	  
+	    
 	    user.setFirstName(dto.getFirstName());
 	    user.setLastName(dto.getLastName());
 	    user.setEmail(dto.getEmail());
@@ -61,7 +71,7 @@ public class UserService {
 
 	    User updatedUser = repository.save(user);
 
-	    return UserMapper.toDto(updatedUser);
+	    return userMapper.toDto(updatedUser);
 	}
 	
 	//DELETE
@@ -69,12 +79,20 @@ public class UserService {
 	    User user = repository.findById(idUser)
 	        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
 
-	    repository.delete(user);
+	    if(user.getState() == (State.DELETED)) {
+	    	throw new IllegalStateException("User already deleted");
+	    }
+
+	    user.setState(State.DELETED);
+    	repository.save(user);
 	}
 
 
 	
-	
+	/*
+	 * 
+	 * 
+	 * */
 
 
 	
