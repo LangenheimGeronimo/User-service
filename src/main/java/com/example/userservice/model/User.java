@@ -30,8 +30,6 @@ public class User {
 	@Column(nullable = false, unique = true) 
 	private String email;
 	
-	private boolean active;
-	
 	@Enumerated(EnumType.STRING)
 	private Role role; 
 	
@@ -46,13 +44,12 @@ public class User {
 	}
 
 	public User(Long id, String firstName, String lastName, LocalDate birthDate,
-            String email, boolean active, Role role, State state, String password) {
+            String email, Role role, State state, String password) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.birthDate = birthDate;
     this.email = email;
-    this.active = active;
     this.role = role;
     this.state = state;
     this.password = password;
@@ -109,14 +106,6 @@ public class User {
         this.email = email;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public Role getRole() {
         return role;
     }
@@ -142,7 +131,5 @@ public class User {
     }
 }
 
-	// FINALIZAR CONTROLLER
-	// HACER RESPASO Y ENTENDIMIENTO COMPLETO
-	// COMPLETAR CASOS DE USO
+	
 

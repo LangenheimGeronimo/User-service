@@ -1,6 +1,8 @@
 package com.example.userservice.service;
 
 import java.util.List;
+import java.util.Optional;
+
 import com.example.userservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.example.userservice.dto.*;
@@ -86,14 +88,58 @@ public class UserService {
 	    user.setState(State.DELETED);
     	repository.save(user);
 	}
+	
+	public State getState(Long idUser) {	
+		
+		User user = repository.findById(idUser).orElseThrow(() -> new IllegalArgumentException("User not exists"));
+		
+		State userState = user.getState();
+		
+		return userState;
+	}
 
+	//BUSQUEDAS:
+	
+	public UserResponseDTO getUserByEmail(String email) {
+	    User user = repository.findByEmail(email)
+	        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
+
+	    return userMapper.toDto(user);
+	}
+
+	public List<UserResponseDTO> getUsersByFirstName(String firstName) {
+	    List<User> users = repository.findByFirstName(firstName);
+
+	    if (users.isEmpty()) {
+	        throw new IllegalArgumentException("Users not exists");
+	    }
+
+	    return users.stream()
+	            .map(userMapper::toDto)
+	            .toList();
+	}
 
 	
-	/*
-	 * 
-	 * 
-	 * */
+	public List<UserResponseDTO> getUserByLastName(String LastName) {
+	    List<User> users = repository.findByLastName(LastName);
+	    		
+	    if(users.isEmpty()) {
+	    	throw new IllegalArgumentException("Users not exists");
+	    }
 
+	    return users.stream().map(userMapper::toDto).toList();
+	}
+	
+	
+	//EXTRAS
+	public void changeState(Long idUser, State newState) {
+
+		User user = repository.findById(idUser)
+		        .orElseThrow(() -> new IllegalArgumentException("User not exists"));
+		
+		user.setState(newState);
+		repository.save(user);
+	}
 
 	
 }
