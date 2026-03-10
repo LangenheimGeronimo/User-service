@@ -1,11 +1,15 @@
 package com.example.userservice.mapper;
 
 import com.example.userservice.model.User;
+
+import org.springframework.stereotype.Component;
+
 import com.example.userservice.dto.*;
 
+@Component
 public class UserMapper {
 	
-	public User toEntity(UserCreateDTO dto) {
+	public User toEntity(userCreateDTO dto) {
 		User user = new User();
 		user.setFirstName(dto.getFirstName());
 		user.setLastName(dto.getLastName());
@@ -13,7 +17,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
         user.setRole(dto.getRole());
-        user.setActive(true);
+        //user.setActive(true);
 		return user;
 	}
 	

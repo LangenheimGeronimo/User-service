@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import com.example.userservice.model.Role;
 
-public class UserCreateDTO {
+public class userCreateDTO {
 
     private String firstName;
     private String lastName;
@@ -13,10 +13,10 @@ public class UserCreateDTO {
     private LocalDate birthDate;
     private Role role; // o asignarlo fijo en el service
 
-    public UserCreateDTO() {
+    public userCreateDTO() {
     }
 
-    public UserCreateDTO(String firstName, String lastName, String email, String password, LocalDate birthDate,
+    public userCreateDTO(String firstName, String lastName, String email, String password, LocalDate birthDate,
 			Role role) {
 		super();
 		this.firstName = firstName;
