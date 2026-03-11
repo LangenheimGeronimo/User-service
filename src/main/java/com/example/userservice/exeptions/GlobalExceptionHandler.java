@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     // MANEJO DE VALIDACIONES (Lo que Spring lanza automáticamente)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Datos de entrada inválidos", LocalDateTime.now()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
     // MANEJO DE SISTEMA (El "salvavidas" general)

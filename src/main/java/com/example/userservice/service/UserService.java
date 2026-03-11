@@ -24,7 +24,7 @@ public class UserService {
     }
 	
 	//POST
-	public UserResponseDTO createUser(userCreateDTO dto) { 
+	public UserResponseDTO createUser(UserCreateDTO dto) { 
 		if(repository.existsByEmail(dto.getEmail())) {
 			throw new EmailAlreadyExistsException("Email already in use");
 		}
@@ -45,7 +45,7 @@ public class UserService {
 	}
 	
 	// PUT
-	public UserResponseDTO editUser(Long idUser, userCreateDTO dto) {
+	public UserResponseDTO editUser(Long idUser, UserCreateDTO dto) {
 
 	    User user = repository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
 	    

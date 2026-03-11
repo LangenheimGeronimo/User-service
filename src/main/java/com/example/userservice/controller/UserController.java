@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.userservice.service.UserService;
 
+import jakarta.validation.Valid;
+
 import com.example.userservice.dto.*;
 
 @RestController
@@ -23,8 +25,9 @@ public class UserController {
 	@Autowired
 	private UserService service;
 	
+	@Valid
 	@PostMapping
-	public ResponseEntity<UserResponseDTO> createUser( @RequestBody userCreateDTO dto){
+	public ResponseEntity<UserResponseDTO> createUser( @RequestBody UserCreateDTO dto){
 			UserResponseDTO userCreado = service.createUser(dto);
 			return ResponseEntity.status(HttpStatus.CREATED).body(userCreado);
 	} 
@@ -49,7 +52,7 @@ public class UserController {
 	
 	
 	@PutMapping("/{idUser}")
-	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @RequestBody userCreateDTO dto) {
+	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @RequestBody UserCreateDTO dto) {
 		UserResponseDTO user = service.editUser(idUser, dto);
 		return ResponseEntity.ok(user);
 	}

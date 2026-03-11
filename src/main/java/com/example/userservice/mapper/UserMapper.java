@@ -9,7 +9,7 @@ import com.example.userservice.dto.*;
 @Component
 public class UserMapper {
 	
-	public User toEntity(userCreateDTO dto) {
+	public User toEntity(UserCreateDTO dto) {
 		User user = new User();
 		user.setFirstName(dto.getFirstName());
 		user.setLastName(dto.getLastName());
