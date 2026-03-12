@@ -13,12 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.userservice.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
 import com.example.userservice.dto.*;
 
 @RestController
 @RequestMapping("/users")
+@Tag(name = "Usuarios", description = "Endpoints para la gestión de usuarios")
 public class UserController {
 	
 	private final UserService service;
@@ -27,31 +30,40 @@ public class UserController {
 		this.service = service;
 	}
 
+	@Operation(summary = "Crear nuevo usuario", description = "Registra un nuevo usuario en la base de datos")
+    @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente")
 	@PostMapping
 	public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserCreateDTO dto){
 			UserResponseDTO userCreado = service.createUser(dto);
 			return ResponseEntity.status(HttpStatus.CREATED).body(userCreado);
 	} 
 	
+	@Operation(summary = "Obtiene un usuario por ID", description = "Retorna los datos del usuario si existe")
+	@ApiResponse(responseCode = "200", description = "Usuario obtenido exitosamente")
 	@GetMapping("/{idUser}")
 	public ResponseEntity<UserResponseDTO> getUser(@PathVariable Long idUser){
 		UserResponseDTO user = service.getUser(idUser);
 		return ResponseEntity.ok(user);
 	}
 	
+	@Operation(summary = "Obtiene todos los usuarios", description = "Retorna los datos de todos los usuarios si existen")
+	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
 	@GetMapping
 	public ResponseEntity<List<UserResponseDTO>> getUsers(){
 		List<UserResponseDTO> users = service.getUsers();
 		return ResponseEntity.ok(users);
 	}
 	
+	@Operation(summary = "Borrar un usuario", description = "Borra un usuario en la base de datos por id")
+    @ApiResponse(responseCode = "204", description = "Usuario borrado exitosamente")
 	@DeleteMapping("/{idUser}")
 	public ResponseEntity<Void> deleteUser(@PathVariable Long idUser) {
 		service.deleteUser(idUser);
 		return ResponseEntity.noContent().build();
 	}
 	
-	
+	@Operation(summary = "Edita un usuario por ID", description = "Edita al usuario si existe")
+	@ApiResponse(responseCode = "200", description = "Usuario editado exitosamente")
 	@PutMapping("/{idUser}")
 	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @Valid @RequestBody UserCreateDTO dto) {
 		UserResponseDTO user = service.editUser(idUser, dto);
