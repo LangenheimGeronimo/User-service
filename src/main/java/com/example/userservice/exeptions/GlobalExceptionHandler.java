@@ -4,7 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import java.time.LocalDateTime; 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ControllerAdvice
@@ -18,8 +21,15 @@ public class GlobalExceptionHandler {
 
     // MANEJO DE VALIDACIONES (Lo que Spring lanza automáticamente)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    Map<String, String> errors = new HashMap<>();
+    
+    ex.getBindingResult().getFieldErrors().forEach((error) -> {
+        errors.put(error.getField(), error.getDefaultMessage());
+    });
+    
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse("Error de validación", LocalDateTime.now(), errors));
     }
 
     // MANEJO DE SISTEMA (El "salvavidas" general)

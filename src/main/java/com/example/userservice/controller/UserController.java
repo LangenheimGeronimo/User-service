@@ -1,7 +1,6 @@
 package com.example.userservice.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,12 +21,14 @@ import com.example.userservice.dto.*;
 @RequestMapping("/users")
 public class UserController {
 	
-	@Autowired
-	private UserService service;
+	private final UserService service;
 	
-	@Valid
+	public UserController(UserService service) {
+		this.service = service;
+	}
+
 	@PostMapping
-	public ResponseEntity<UserResponseDTO> createUser( @RequestBody UserCreateDTO dto){
+	public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserCreateDTO dto){
 			UserResponseDTO userCreado = service.createUser(dto);
 			return ResponseEntity.status(HttpStatus.CREATED).body(userCreado);
 	} 
@@ -52,7 +53,7 @@ public class UserController {
 	
 	
 	@PutMapping("/{idUser}")
-	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @RequestBody UserCreateDTO dto) {
+	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @Valid @RequestBody UserCreateDTO dto) {
 		UserResponseDTO user = service.editUser(idUser, dto);
 		return ResponseEntity.ok(user);
 	}

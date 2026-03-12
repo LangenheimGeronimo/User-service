@@ -25,7 +25,7 @@ public class UserService {
 	
 	//POST
 	public UserResponseDTO createUser(UserCreateDTO dto) { 
-		if(repository.existsByEmail(dto.getEmail())) {
+		if(repository.existsByEmail(dto.email())) {
 			throw new EmailAlreadyExistsException("Email already in use");
 		}
 		User userEntity = userMapper.toEntity(dto);
@@ -53,13 +53,13 @@ public class UserService {
 	    	throw new UserIsAlreadyDeletedException("User already deleted"); 
 	    }
 
-	    if (!user.getEmail().equals(dto.getEmail()) && repository.existsByEmail(dto.getEmail())) {
+	    if (!user.getEmail().equals(dto.email()) && repository.existsByEmail(dto.email())) {
 	    	   throw new EmailAlreadyExistsException("Email already in use");
 	    }
-	    user.setFirstName(dto.getFirstName());
-	    user.setLastName(dto.getLastName());
-	    user.setEmail(dto.getEmail());
-	    user.setPassword(dto.getPassword());
+	    user.setFirstName(dto.firstName());
+	    user.setLastName(dto.lastName());
+	    user.setEmail(dto.email());
+	    user.setPassword(dto.password());
 
 	    User updatedUser = repository.save(user);
 	    return userMapper.toDto(updatedUser);
@@ -71,7 +71,7 @@ public class UserService {
 	        .orElseThrow(() -> new UserNotFoundException("User not exists"));
 
 	    if(user.getState() == (State.DELETED)) {
-	    	throw new IllegalStateException("User already deleted");
+	    	throw new UserIsAlreadyDeletedException("User already deleted");
 	    }
 
 	    user.setState(State.DELETED);
@@ -108,8 +108,8 @@ public class UserService {
 	            .toList();
 	}
 	
-	public List<UserResponseDTO> getUserByLastName(String LastName) {
-	    List<User> users = repository.findByLastName(LastName);
+	public List<UserResponseDTO> getUserByLastName(String lastName) {
+	    List<User> users = repository.findByLastName(lastName);
 	    		
 	    if(users.isEmpty()) {
 	    	throw new UserNotFoundException("Users not exists");
