@@ -5,6 +5,8 @@ import com.example.userservice.repository.UserRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.userservice.dto.*;
 import com.example.userservice.exceptions.EmailAlreadyExistsException;
@@ -18,14 +20,15 @@ import com.example.userservice.mapper.*;
 public class UserService {
 	
 	private final UserRepository repository;
-	
 	private final UserMapper userMapper;
+	private final PasswordEncoder passwordEncoder;
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	
-	public UserService(UserRepository repository, UserMapper userMapper) {
+	public UserService(UserRepository repository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.userMapper = userMapper;
+		this.passwordEncoder = passwordEncoder;
     }
 	
 	//POST
@@ -36,6 +39,7 @@ public class UserService {
 		}
 		User userEntity = userMapper.toEntity(dto);
 		userEntity.setState(State.ACTIVE);
+		userEntity.setPassword(passwordEncoder.encode(dto.password()));
 		User savedUser = repository.save(userEntity);	
 		logger.info("Usuario guardado exitosamente: {}", savedUser.getId());
 		return userMapper.toDto(savedUser);
@@ -70,8 +74,7 @@ public class UserService {
 	    user.setFirstName(dto.firstName());
 	    user.setLastName(dto.lastName());
 	    user.setEmail(dto.email());
-	    user.setPassword(dto.password());
-
+		user.setPassword(passwordEncoder.encode(dto.password()));
 	    User updatedUser = repository.save(user);
 		logger.info("Usuario editado y guardado correctamente: {}", updatedUser.getId());
 	    return userMapper.toDto(updatedUser);
@@ -136,5 +139,21 @@ public class UserService {
 		logger.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
-	
+	public UserResponseDTO login(LoginDTO dto) {
+		logger.info("Intento de login para el correo: {}", dto.email());
+		
+		User user = repository.findByEmail(dto.email())
+				.orElseThrow(() -> new UserNotFoundException("Usuario o contraseña incorrectos"));
+
+		if (user.getState() == State.DELETED) {
+			throw new UserIsAlreadyDeletedException("La cuenta se encuentra inhabilitada");
+		}
+
+		if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
+			throw new BadCredentialsException("Usuario o contraseña incorrectos");
+		}
+
+		logger.info("Login exitoso para el usuario ID: {}", user.getId());
+		return userMapper.toDto(user);
+	}
 }

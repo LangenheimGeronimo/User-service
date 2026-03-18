@@ -1,6 +1,7 @@
 package com.example.userservice.dto;
 
 import com.example.userservice.model.Role;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -30,6 +31,7 @@ public record UserCreateDTO(
     @Schema(description = "Fecha de nacimiento del usuario", example = "19/04/2004")
     @NotNull(message = "La fecha de nacimiento es obligatoria")
     @Past(message = "La fecha debe ser una fecha pasada")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate birthDate,
 
     @Schema(description = "Rol del usuario", example = "ADMIN")

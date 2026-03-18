@@ -106,6 +106,12 @@ public class UserController {
 		return ResponseEntity.ok().build();	
 	}
 	
+	@Operation(summary = "Inicia sesion", description = "Comprueba el ingreso de las credenciales para verificar si son correctos")
+	@ApiResponse(responseCode = "200", description = "Credenciales correctas")
+	@PostMapping("/login")
+	public ResponseEntity<UserResponseDTO> login(@RequestBody LoginDTO dto) {
+    	return ResponseEntity.ok(service.login(dto));
+	}
 	
 }
 

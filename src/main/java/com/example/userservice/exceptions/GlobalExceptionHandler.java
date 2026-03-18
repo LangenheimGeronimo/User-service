@@ -2,6 +2,7 @@ package com.example.userservice.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.time.LocalDateTime;
@@ -63,4 +64,16 @@ public class GlobalExceptionHandler {
         logger.warn("Recurso no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
+
+    // MANEJO DE CREDENCIALES ERRONEAS (SEGURIDAD)
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+    logger.error("Error de autenticación: {}", ex.getMessage());
+    ErrorResponse error = new ErrorResponse(
+        ex.getMessage(),
+        LocalDateTime.now()
+    );
+    return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED); // El 401 es el correcto para login fallido
+    }
 }
+
