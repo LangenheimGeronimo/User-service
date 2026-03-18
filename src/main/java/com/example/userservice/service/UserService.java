@@ -42,7 +42,7 @@ public class UserService {
 		userEntity.setPassword(passwordEncoder.encode(dto.password()));
 		User savedUser = repository.save(userEntity);	
 		logger.info("Usuario guardado exitosamente: {}", savedUser.getId());
-		return userMapper.toDto(savedUser);
+		return userMapper.toResponseDto(savedUser);
 	}
 	
 
@@ -50,13 +50,13 @@ public class UserService {
 	public UserResponseDTO getUser(Long idUser) {
 		logger.info("Intento de obtener por id: {}", idUser);
 		User user = repository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
-	    return userMapper.toDto(user);
+	    return userMapper.toResponseDto(user);
 	}
 	
 	//GET 
 	public List<UserResponseDTO> getUsers (){
 		logger.info("Intento de obtener todos los usuarios");
-		return  repository.findAllByState(State.ACTIVE).stream().map(userMapper::toDto).toList(); 
+		return  repository.findAllByState(State.ACTIVE).stream().map(userMapper::toResponseDto).toList(); 
 	}
 	
 	// PUT
@@ -77,7 +77,7 @@ public class UserService {
 		user.setPassword(passwordEncoder.encode(dto.password()));
 	    User updatedUser = repository.save(user);
 		logger.info("Usuario editado y guardado correctamente: {}", updatedUser.getId());
-	    return userMapper.toDto(updatedUser);
+	    return userMapper.toResponseDto(updatedUser);
 	}
 	
 	//DELETE
@@ -109,7 +109,7 @@ public class UserService {
 	    User user = repository.findByEmail(email)
 	        .orElseThrow(() -> new UserNotFoundException("User not exists"));
 		logger.info("Usuario encontrado con email: {}", email);
-	    return userMapper.toDto(user);
+	    return userMapper.toResponseDto(user);
 	}
 
 
@@ -117,14 +117,14 @@ public class UserService {
 		logger.info("Intento de obtener usuarios por firstName: {}", firstName);
 	    List<User> users = repository.findByFirstNameAndState(firstName, State.ACTIVE);
 
-	    return users.stream().map(userMapper::toDto).toList();
+	    return users.stream().map(userMapper::toResponseDto).toList();
 	}
 	
 	
 	public List<UserResponseDTO> getUsersByLastName(String lastName) {
 		logger.info("Intento de obtener usuarios por lastName: {}", lastName);
 	    List<User> users = repository.findByLastNameAndState(lastName, State.ACTIVE);
-	    return users.stream().map(userMapper::toDto).toList();
+	    return users.stream().map(userMapper::toResponseDto).toList();
 	}
 	
 	
@@ -154,6 +154,6 @@ public class UserService {
 		}
 
 		logger.info("Login exitoso para el usuario ID: {}", user.getId());
-		return userMapper.toDto(user);
+		return userMapper.toResponseDto(user);
 	}
 }
