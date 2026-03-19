@@ -10,12 +10,12 @@ import java.time.LocalDate;
 public record UserCreateDTO(
     @Schema(description = "Nombre del usuario", example = "Geronimo", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Debe ingresar un nombre válido")
-    @Size(min = 5, max = 20, message = "El nombre de usuario no puede tener más de 20 caracteres")
+    @Size(min = 3, max = 20, message = "El nombre de usuario no puede tener más de 20 caracteres")
     String firstName,
 
     @Schema(description = "Apellido del usuario", example = "Langenheim")
     @NotBlank(message = "Debe ingresar un apellido válido")
-    @Size(min = 5, max = 20, message = "El apellido de usuario no puede tener más de 20 caracteres")
+    @Size(min = 3, max = 20, message = "El apellido de usuario no puede tener más de 20 caracteres")
     String lastName,
 
     @Schema(description = "Correo electrónico del usuario", example = "geronimo@email.com")

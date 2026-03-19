@@ -6,6 +6,9 @@ import com.example.userservice.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.userservice.dto.*;
@@ -17,7 +20,7 @@ import com.example.userservice.model.User;
 import com.example.userservice.mapper.*;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService{
 	
 	private final UserRepository repository;
 	private final UserMapper userMapper;
@@ -155,5 +158,12 @@ public class UserService {
 
 		logger.info("Login exitoso para el usuario ID: {}", user.getId());
 		return userMapper.toResponseDto(user);
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    logger.info("Spring Security intentando cargar usuario por email: {}", email);
+    return repository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("No se encontró el usuario con email: " + email));
 	}
 }
