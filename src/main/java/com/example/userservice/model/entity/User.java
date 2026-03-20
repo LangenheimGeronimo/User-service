@@ -1,4 +1,4 @@
-package com.example.userservice.model;
+package com.example.userservice.model.entity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.userservice.model.enums.Role;
+import com.example.userservice.model.enums.State;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

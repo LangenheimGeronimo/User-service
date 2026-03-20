@@ -1,7 +1,8 @@
 package com.example.userservice.repository;
 
-import com.example.userservice.model.State;
-import com.example.userservice.model.User;
+import com.example.userservice.model.enums.State;
+import com.example.userservice.model.entity.User;
+
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.example.userservice.exceptions;
+package com.example.userservice.exception;
 
 public class AlreadyReportedException extends RuntimeException{
     public AlreadyReportedException(String message) {

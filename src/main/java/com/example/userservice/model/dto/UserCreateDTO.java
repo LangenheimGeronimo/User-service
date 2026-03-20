@@ -1,6 +1,6 @@
-package com.example.userservice.dto;
+package com.example.userservice.model.dto;
 
-import com.example.userservice.model.Role;
+import com.example.userservice.model.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;

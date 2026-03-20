@@ -1,7 +1,8 @@
 package com.example.userservice.mapper;
 
-import com.example.userservice.dto.ReportCreateDTO;
-import com.example.userservice.model.Report;
+import com.example.userservice.model.dto.ReportCreateDTO;
+import com.example.userservice.model.entity.Report;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;

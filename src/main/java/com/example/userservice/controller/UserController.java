@@ -18,8 +18,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import com.example.userservice.dto.*;
-import com.example.userservice.model.State;
+import com.example.userservice.model.dto.*;
+import com.example.userservice.model.enums.*;
 
 @RestController
 @RequestMapping("/users")

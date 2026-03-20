@@ -1,10 +1,10 @@
 package com.example.userservice.mapper;
 
-import com.example.userservice.model.User;
-
+import com.example.userservice.model.dto.*;
+import com.example.userservice.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import com.example.userservice.dto.*;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

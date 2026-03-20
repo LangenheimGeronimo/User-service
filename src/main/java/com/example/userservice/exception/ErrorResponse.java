@@ -1,4 +1,4 @@
-package com.example.userservice.exceptions;
+package com.example.userservice.exception;
 
 import java.time.LocalDateTime;
 import java.util.Map;
