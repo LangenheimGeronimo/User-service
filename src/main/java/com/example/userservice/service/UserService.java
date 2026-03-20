@@ -1,8 +1,9 @@
 package com.example.userservice.service;
 
 import java.util.List;
+import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
-
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,6 +16,7 @@ import com.example.userservice.dto.*;
 import com.example.userservice.exceptions.EmailAlreadyExistsException;
 import com.example.userservice.exceptions.UserIsAlreadyDeletedException;
 import com.example.userservice.exceptions.UserNotFoundException;
+import com.example.userservice.model.Report;
 import com.example.userservice.model.State;
 import com.example.userservice.model.User;
 import com.example.userservice.mapper.*;
@@ -25,13 +27,17 @@ public class UserService implements UserDetailsService{
 	private final UserRepository repository;
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
+	private final ReportMapper reportMapper;
+	private final ReportRepository reportRepository;
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	
-	public UserService(UserRepository repository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+	public UserService(UserRepository repository, UserMapper userMapper, PasswordEncoder passwordEncoder, ReportMapper reportMapper, ReportRepository reportRepository) {
         this.repository = repository;
         this.userMapper = userMapper;
 		this.passwordEncoder = passwordEncoder;
+		this.reportMapper = reportMapper;
+		this.reportRepository = reportRepository;
     }
 	
 	//POST
@@ -166,4 +172,27 @@ public class UserService implements UserDetailsService{
     return repository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("No se encontró el usuario con email: " + email));
 	}
+
+	@Transactional
+	public void addReport(ReportCreateDTO dto){ 
+		logger.info("Intento de realizar un reporte a un Usuario:");
+		if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())){
+			throw new UserNotFoundException("No se encuentra el reportado y/o denunciante");
+		}
+		Report report = reportMapper.toEntity(dto);
+		reportRepository.save(report);
+		logger.info("Reporte guardado exitosamente: {}", report);
+
+		long cont = reportRepository.countByReportedUserId(dto.reportedUserId());
+
+		if(cont >= 3){
+			User user = repository.findById(dto.reportedUserId())
+        	.orElseThrow(() -> new UserNotFoundException("No se encontró el usuario para banear"));
+    
+			user.setState(State.BANNED);
+			repository.save(user);
+			logger.warn("¡USUARIO BANEADO! El ID {} alcanzó los {} reportes.", dto.reportedUserId(), cont);
+		}
+	}
+
 }

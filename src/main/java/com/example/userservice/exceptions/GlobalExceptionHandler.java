@@ -65,6 +65,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
+    //MANEJO DE REPORTE NO EJECUTADO (NEGOCIO)
+    @ExceptionHandler(AlreadyReportedException.class)
+    public ResponseEntity<ErrorResponse> handleBadReport(AlreadyReportedException ex){
+        logger.warn("Conflicto en reporte: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
+    }
+
     // MANEJO DE CREDENCIALES ERRONEAS (SEGURIDAD)
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {

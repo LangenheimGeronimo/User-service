@@ -115,6 +115,13 @@ public class UserController {
     	return ResponseEntity.ok(service.login(dto));
 	}
 	
+	@Operation(summary = "Agregar un reporte", description = "Realiza un reporte a un usuario en especifico")
+	@ApiResponse(responseCode = "200", description = "Reporte agregado")
+	@PostMapping("/report")
+	public ResponseEntity<Void> addReportToUser(@RequestBody ReportCreateDTO dto){
+		service.addReport(dto); 
+    	return ResponseEntity.ok().build();
+	}
 }
 
 
