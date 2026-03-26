@@ -3,6 +3,8 @@ package com.example.userservice.service;
 import java.util.List;
 import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.security.UserPrincipal;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,13 +178,6 @@ public class UserService implements UserDetailsService{
 		return userMapper.toResponseDto(user);
 	}
 
-	@Override
-	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    logger.info("Spring Security intentando cargar usuario por email: {}", email);
-    return userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("No se encontró el usuario con email: " + email));
-	}
-
 	@Transactional
 	public void addReport(ReportCreateDTO dto){ 
 		logger.info("Intento de realizar un reporte a un Usuario:");
@@ -203,6 +198,15 @@ public class UserService implements UserDetailsService{
 			userRepository.save(user);
 			logger.warn("¡USUARIO BANEADO! El ID {} alcanzó los {} reportes.", dto.reportedUserId(), cont);
 		}
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		logger.info("Cargando detalles de seguridad para el email: {}", email);
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException("No se encontró el usuario: " + email));
+				
+		return new UserPrincipal(user); 
 	}
 
 }

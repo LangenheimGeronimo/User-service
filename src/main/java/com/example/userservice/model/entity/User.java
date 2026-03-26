@@ -2,10 +2,7 @@ package com.example.userservice.model.entity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
 import jakarta.persistence.Column;
@@ -20,7 +17,7 @@ import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "users")
-public class User implements UserDetails{
+public class User {
 	
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -135,38 +132,6 @@ public class User implements UserDetails{
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    //SEGURIDAD 
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(() -> "ROLE_" + role.name());
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() { 
-        return true; 
-    }
-
-    @Override
-    public boolean isAccountNonLocked() { 
-        return this.state != State.BANNED;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() { 
-        return true; 
-    }
-
-    @Override
-    public boolean isEnabled() { 
-        return this.state != State.DELETED;
     }
 }
 
