@@ -4,13 +4,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -140,6 +137,8 @@ public class User implements UserDetails{
         this.password = password;
     }
 
+    //SEGURIDAD 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(() -> "ROLE_" + role.name());
@@ -151,17 +150,23 @@ public class User implements UserDetails{
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
-
-    @Override
-    public boolean isAccountNonLocked() { 
+    public boolean isAccountNonExpired() { 
         return true; 
     }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isAccountNonLocked() { 
+        return this.state != State.BANNED;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
     }
+
+    @Override
+    public boolean isEnabled() { 
+        return this.state != State.DELETED;
+    }
+}
 

@@ -1,46 +1,38 @@
 package com.example.userservice.model.entity;
 
 import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "reports")
+@Data // Genera getters, setters, toString, equals y hashCode
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder // Útil para crear reportes en tests o servicios de forma limpia
 public class Report {
     
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "reason", nullable = false, length = 500) // Limitamos longitud
     private String reason;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "reported_user_id", nullable = false)
     private Long reportedUserId;
 
-    @Column(nullable = false)
+    @Column(name = "reporter_user_id", nullable = false)
     private Long reporterUserId;
 
-    public Report() {
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getReason() { return reason; }
-    public void setReason(String reason) { this.reason = reason; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public Long getReportedUserId() { return reportedUserId; }
-    public void setReportedUserId(Long reportedUserId) { this.reportedUserId = reportedUserId; }
-    public Long getReporterUserId() { return reporterUserId; }
-    public void setReporterUserId(Long reporterUserId) { this.reporterUserId = reporterUserId; }
 }
-
-

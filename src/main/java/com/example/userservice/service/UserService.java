@@ -3,7 +3,7 @@ package com.example.userservice.service;
 import java.util.List;
 import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,17 +12,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.example.userservice.model.dto.*;
 import com.example.userservice.model.entity.Report;
 import com.example.userservice.model.enums.*; 
 import com.example.userservice.model.entity.User;
+import com.example.userservice.exception.AlreadyReportedException;
 import com.example.userservice.exception.EmailAlreadyExistsException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.mapper.*;
 
 @Service
+@Transactional(readOnly = true)
 public class UserService implements UserDetailsService{
 	
 	private final UserRepository userRepository;
@@ -42,6 +43,7 @@ public class UserService implements UserDetailsService{
     }
 	
 	//POST
+	@Transactional
 	public UserResponseDTO createUser(UserCreateDTO dto) { 
 		logger.info("Intento de registro para el usuario con email: {}", dto.email());
 		if(userRepository.existsByEmail(dto.email())) {
@@ -66,10 +68,11 @@ public class UserService implements UserDetailsService{
 	//GET 
 	public List<UserResponseDTO> getUsers (){
 		logger.info("Intento de obtener todos los usuarios");
-		return  userRepository.findAllByState(State.ACTIVE).stream().map(userMapper::toResponseDto).toList(); 
+		return userRepository.findAllByState(State.ACTIVE).stream().map(userMapper::toResponseDto).toList(); 
 	}
 	
 	// PUT
+	@Transactional
 	public UserResponseDTO editUser(Long idUser, UserCreateDTO dto) {
 		logger.info("Intento de editar un usuario por id: {}", idUser);
 	    User user = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
@@ -81,16 +84,17 @@ public class UserService implements UserDetailsService{
 	    if (!user.getEmail().equals(dto.email()) && userRepository.existsByEmail(dto.email())) {
 	    	   throw new EmailAlreadyExistsException("Email already in use");
 	    }
-	    user.setFirstName(dto.firstName());
-	    user.setLastName(dto.lastName());
-	    user.setEmail(dto.email());
+	
+		userMapper.updateEntityFromDto(dto, user); 
 		user.setPassword(passwordEncoder.encode(dto.password()));
+
 	    User updatedUser = userRepository.save(user);
 		logger.info("Usuario editado y guardado correctamente: {}", updatedUser.getId());
 	    return userMapper.toResponseDto(updatedUser);
 	}
-	
+
 	//DELETE
+	@Transactional
 	public void deleteUser(Long idUser) {
 		logger.info("Intento de borrar un usuario por id: {}", idUser);
 	    User user = userRepository.findById(idUser)
@@ -104,7 +108,9 @@ public class UserService implements UserDetailsService{
 		logger.info("Usuario eliminado correctamente: {}", idUser);
     	userRepository.save(user);
 	}
+
 	
+	//GET
 	public State getState(Long idUser) {	
 		logger.info("Intento de obtener un usuario por id: {}", idUser);
 		User user = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
@@ -122,7 +128,7 @@ public class UserService implements UserDetailsService{
 	    return userMapper.toResponseDto(user);
 	}
 
-
+	
 	public List<UserResponseDTO> getUsersByFirstName(String firstName) {
 		logger.info("Intento de obtener usuarios por firstName: {}", firstName);
 	    List<User> users = userRepository.findByFirstNameAndState(firstName, State.ACTIVE);
@@ -137,8 +143,8 @@ public class UserService implements UserDetailsService{
 	    return users.stream().map(userMapper::toResponseDto).toList();
 	}
 	
-	
 	//EXTRAS
+	@Transactional
 	public void changeState(Long idUser, State newState) {
 		logger.info("Intento de cambiar de estado de un usuario por id: {}", idUser);
 		User user = userRepository.findById(idUser)
@@ -149,6 +155,9 @@ public class UserService implements UserDetailsService{
 		logger.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
+	//SEGURIDAD
+
+	@Transactional
 	public UserResponseDTO login(LoginDTO dto) {
 		logger.info("Intento de login para el correo: {}", dto.email());
 		
@@ -178,7 +187,7 @@ public class UserService implements UserDetailsService{
 	public void addReport(ReportCreateDTO dto){ 
 		logger.info("Intento de realizar un reporte a un Usuario:");
 		if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())){
-			throw new UserNotFoundException("No se encuentra el reportado y/o denunciante");
+			throw new AlreadyReportedException("El usuario ya ha realizado una denuncia previa contra este perfil.");
 		}
 		Report report = reportMapper.toEntity(dto);
 		reportRepository.save(report);
