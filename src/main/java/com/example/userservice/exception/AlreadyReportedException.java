@@ -1,7 +1,7 @@
 package com.example.userservice.exception;
 
 public class AlreadyReportedException extends RuntimeException{
-    public AlreadyReportedException(String message) {
-        super(message);
+    public AlreadyReportedException() {
+        super("El usuario ya ha realizado una denuncia previa contra este perfil.");
     }
 }

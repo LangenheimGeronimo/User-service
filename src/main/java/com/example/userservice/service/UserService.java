@@ -4,11 +4,9 @@ import java.util.List;
 import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.security.UserPrincipal;
-
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,8 +18,10 @@ import com.example.userservice.model.enums.*;
 import com.example.userservice.model.entity.User;
 import com.example.userservice.exception.AlreadyReportedException;
 import com.example.userservice.exception.EmailAlreadyExistsException;
+import com.example.userservice.exception.InvalidLoginException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
+import com.example.userservice.exception.UserSecurityNotFoundException;
 import com.example.userservice.mapper.*;
 
 @Service
@@ -49,7 +49,7 @@ public class UserService implements UserDetailsService{
 	public UserResponseDTO createUser(UserCreateDTO dto) { 
 		logger.info("Intento de registro para el usuario con email: {}", dto.email());
 		if(userRepository.existsByEmail(dto.email())) {
-			throw new EmailAlreadyExistsException("Email already in use");
+			throw new EmailAlreadyExistsException();
 		}
 		User userEntity = userMapper.toEntity(dto);
 		userEntity.setState(State.ACTIVE);
@@ -63,7 +63,7 @@ public class UserService implements UserDetailsService{
 	//GET
 	public UserResponseDTO getUser(Long idUser) {
 		logger.info("Intento de obtener por id: {}", idUser);
-		User user = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
+		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 	    return userMapper.toResponseDto(user);
 	}
 	
@@ -77,14 +77,14 @@ public class UserService implements UserDetailsService{
 	@Transactional
 	public UserResponseDTO editUser(Long idUser, UserCreateDTO dto) {
 		logger.info("Intento de editar un usuario por id: {}", idUser);
-	    User user = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
+	    User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 	    
 	    if(user.getState() == State.DELETED) {
-	    	throw new UserIsAlreadyDeletedException("User already deleted"); 
+	    	throw new UserIsAlreadyDeletedException(); 
 	    }
 
 	    if (!user.getEmail().equals(dto.email()) && userRepository.existsByEmail(dto.email())) {
-	    	   throw new EmailAlreadyExistsException("Email already in use");
+	    	throw new EmailAlreadyExistsException();
 	    }
 	
 		userMapper.updateEntityFromDto(dto, user); 
@@ -99,11 +99,10 @@ public class UserService implements UserDetailsService{
 	@Transactional
 	public void deleteUser(Long idUser) {
 		logger.info("Intento de borrar un usuario por id: {}", idUser);
-	    User user = userRepository.findById(idUser)
-	        .orElseThrow(() -> new UserNotFoundException("User not exists"));
+	    User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 
 	    if(user.getState() == (State.DELETED)) {
-	    	throw new UserIsAlreadyDeletedException("User already deleted");
+	    	throw new UserIsAlreadyDeletedException();
 	    }
 
 	    user.setState(State.DELETED);
@@ -115,7 +114,7 @@ public class UserService implements UserDetailsService{
 	//GET
 	public State getState(Long idUser) {	
 		logger.info("Intento de obtener un usuario por id: {}", idUser);
-		User user = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not exists"));
+		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 		State userState = user.getState();
 		return userState;
 	}
@@ -124,8 +123,7 @@ public class UserService implements UserDetailsService{
 	
 	public UserResponseDTO getUserByEmail(String email) {
 		logger.info("Intento de obtener un usuario por email: {}", email);
-	    User user = userRepository.findByEmail(email)
-	        .orElseThrow(() -> new UserNotFoundException("User not exists"));
+	    User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 		logger.info("Usuario encontrado con email: {}", email);
 	    return userMapper.toResponseDto(user);
 	}
@@ -149,8 +147,7 @@ public class UserService implements UserDetailsService{
 	@Transactional
 	public void changeState(Long idUser, State newState) {
 		logger.info("Intento de cambiar de estado de un usuario por id: {}", idUser);
-		User user = userRepository.findById(idUser)
-		        .orElseThrow(() -> new UserNotFoundException("User not exists"));
+		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 		
 		user.setState(newState);
 		userRepository.save(user);
@@ -163,15 +160,14 @@ public class UserService implements UserDetailsService{
 	public UserResponseDTO login(LoginDTO dto) {
 		logger.info("Intento de login para el correo: {}", dto.email());
 		
-		User user = userRepository.findByEmail(dto.email())
-				.orElseThrow(() -> new UserNotFoundException("Usuario o contraseña incorrectos"));
+		User user = userRepository.findByEmail(dto.email()).orElseThrow(UserNotFoundException::new);
 
 		if (user.getState() == State.DELETED) {
-			throw new UserIsAlreadyDeletedException("La cuenta se encuentra inhabilitada");
+			throw new UserIsAlreadyDeletedException();
 		}
 
 		if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
-			throw new BadCredentialsException("Usuario o contraseña incorrectos");
+			throw new InvalidLoginException();
 		}
 
 		logger.info("Login exitoso para el usuario ID: {}", user.getId());
@@ -182,7 +178,7 @@ public class UserService implements UserDetailsService{
 	public void addReport(ReportCreateDTO dto){ 
 		logger.info("Intento de realizar un reporte a un Usuario:");
 		if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())){
-			throw new AlreadyReportedException("El usuario ya ha realizado una denuncia previa contra este perfil.");
+			throw new AlreadyReportedException();
 		}
 		Report report = reportMapper.toEntity(dto);
 		reportRepository.save(report);
@@ -191,8 +187,7 @@ public class UserService implements UserDetailsService{
 		long cont = reportRepository.countByReportedUserId(dto.reportedUserId());
 
 		if(cont >= 3){
-			User user = userRepository.findById(dto.reportedUserId())
-        	.orElseThrow(() -> new UserNotFoundException("No se encontró el usuario para banear"));
+			User user = userRepository.findById(dto.reportedUserId()).orElseThrow(UserNotFoundException::new);
     
 			user.setState(State.BANNED);
 			userRepository.save(user);
@@ -203,8 +198,7 @@ public class UserService implements UserDetailsService{
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		logger.info("Cargando detalles de seguridad para el email: {}", email);
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UsernameNotFoundException("No se encontró el usuario: " + email));
+		User user = userRepository.findByEmail(email).orElseThrow(UserSecurityNotFoundException::new);
 				
 		return new UserPrincipal(user); 
 	}
