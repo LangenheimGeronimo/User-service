@@ -10,10 +10,12 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ReportMapper {
 
-    // MapStruct mapeará reason(), reportedUserId() y reporterUserId()
-    // automáticamente a los campos de la entidad Report.
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    // Agregamos mapeos explícitos porque los nombres en el Record no tienen "get"
+    @Mapping(source = "reason", target = "reason")
+    @Mapping(source = "reporterUserId", target = "reporterUserId")
+    @Mapping(source = "reportedUserId", target = "reportedUserId")
     Report toEntity(ReportCreateDTO dto);
 
     ReportCreateDTO toDTO(Report entity);
