@@ -3,8 +3,8 @@ package com.example.userservice.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -13,13 +13,12 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    // Nota: La clave debe ser lo suficientemente larga para HS256 (mínimo 32 caracteres)
     private static final String SECRET_KEY = "TuClaveSecretaSuperSeguraParaElProyectoDeGeronimo12345";
     private static final long EXPIRATION_TIME = 3600000; // 1 hora en milisegundos
 
     /**
      * Genera la llave de firma. 
-     * En la versión 0.12.x, se prefiere trabajar directamente con SecretKey.
+     * En la versión 0.12.x, trabajar directamente con SecretKey.
      */
     private SecretKey getSigningKey() {
         byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
@@ -29,13 +28,13 @@ public class JwtUtils {
     /**
      * Crea un nuevo token JWT para el usuario.
      */
-    public String generateToken(String email) {
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey()) // El algoritmo se detecta automáticamente por el tamaño de la llave
-                .compact();
+    public String generateToken(UserDetails userDetails) {
+    return Jwts.builder()
+            .subject(userDetails.getUsername()) 
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+            .signWith(getSigningKey()) 
+            .compact();
     }
 
     /**
@@ -49,13 +48,12 @@ public class JwtUtils {
                 .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
-            // Aquí podrías loguear por qué falló (expirado, firma inválida, etc.)
             return false;
         }
     }
 
     /**
-     * Extrae el email (subject) del token.
+     * Extrae el email del token.
      */
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -69,7 +67,7 @@ public class JwtUtils {
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload(); // .getPayload() reemplaza a .getBody() en 0.12.x
+                .getPayload(); 
         return claimsResolver.apply(claims);
     }
 }

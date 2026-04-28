@@ -47,7 +47,6 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() { return true; }
     
-    // Un getter extra para obtener el ID si lo necesitas en el @PreAuthorize
     public Long getId() {
         return user.getId();
     }
