@@ -3,6 +3,8 @@ package com.example.userservice.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
@@ -13,15 +15,15 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    private static final String SECRET_KEY = "TuClaveSecretaSuperSeguraParaElProyectoDeGeronimo12345";
-    private static final long EXPIRATION_TIME = 3600000; // 1 hora en milisegundos
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
 
-    /**
-     * Genera la llave de firma. 
-     * En la versión 0.12.x, trabajar directamente con SecretKey.
-     */
+    @Value("${application.security.jwt.expiration}")
+    private long expirationTime;
+
     private SecretKey getSigningKey() {
-        byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+        // Ahora usamos la variable inyectada
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
  
@@ -32,7 +34,7 @@ public class JwtUtils {
     return Jwts.builder()
             .subject(userDetails.getUsername()) 
             .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+            .expiration(new Date(System.currentTimeMillis() + expirationTime))
             .signWith(getSigningKey()) 
             .compact();
     }
