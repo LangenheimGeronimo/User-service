@@ -10,6 +10,7 @@ import java.util.List;
 
 public class UserPrincipal implements UserDetails {
 
+    // El objeto User original queda encapsulado y protegido
     private final User user; 
 
     public UserPrincipal(User user) {
@@ -18,6 +19,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Mapeo profesional: Spring Security espera "ROLE_ADMIN", no solo "ADMIN"
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
@@ -28,11 +30,12 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getEmail(); // Usamos email como identificador único (username)
     }
 
     @Override
     public boolean isAccountNonLocked() {
+        // Lógica de negocio aplicada directamente a la seguridad
         return user.getState() != State.BANNED;
     }
 
@@ -42,12 +45,21 @@ public class UserPrincipal implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() { 
+        return true; 
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
+    }
     
+    // Métodos extra útiles para obtener datos del usuario sin exponer toda la entidad si no quieres
     public Long getId() {
         return user.getId();
+    }
+
+    public User getUser() {
+        return this.user;
     }
 }
