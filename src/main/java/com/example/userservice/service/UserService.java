@@ -3,13 +3,9 @@ package com.example.userservice.service;
 import java.util.List;
 import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
-import com.example.userservice.security.UserPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.userservice.model.dto.*;
@@ -21,12 +17,11 @@ import com.example.userservice.exception.EmailAlreadyExistsException;
 import com.example.userservice.exception.InvalidLoginException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
-import com.example.userservice.exception.UserSecurityNotFoundException;
 import com.example.userservice.mapper.*;
 
 @Service
 @Transactional(readOnly = true)
-public class UserService implements UserDetailsService{
+public class UserService {
 	
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
@@ -195,12 +190,6 @@ public class UserService implements UserDetailsService{
 		}
 	}
 
-	@Override
-	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		logger.info("Cargando detalles de seguridad para el email: {}", email);
-		User user = userRepository.findByEmail(email).orElseThrow(UserSecurityNotFoundException::new);
-				
-		return new UserPrincipal(user); 
-	}
+	
 
 }

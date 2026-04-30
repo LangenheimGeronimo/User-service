@@ -54,6 +54,7 @@ public class UserController {
 	@Operation(summary = "Obtiene todos los usuarios", description = "Retorna los datos de todos los usuarios si existen")
 	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
 	@GetMapping
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<UserResponseDTO>> getUsers(){
 		List<UserResponseDTO> users = service.getUsers();
 		return ResponseEntity.ok(users);
@@ -76,6 +77,7 @@ public class UserController {
 	@ApiResponse(responseCode = "404", description = "Usuario no encontrado")
 	@ApiResponse(responseCode = "409", description = "El email ya está siendo usado por otro usuario")
 	@PutMapping("/{idUser}")
+	@PreAuthorize("hasRole('ADMIN') or #idUser == authentication.principal.id")
 	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @Valid @RequestBody UserCreateDTO dto) {
 		UserResponseDTO user = service.editUser(idUser, dto);
 		return ResponseEntity.ok(user);
@@ -85,6 +87,7 @@ public class UserController {
 	@ApiResponse(responseCode = "200", description = "Usuario obtenido exitosamente")
 	@ApiResponse(responseCode = "404", description = "Usuario no encontrado")
 	@GetMapping("/email/{email}")
+	@PreAuthorize("hasRole('ADMIN') or #email == authentication.name")
 	public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email){
 		UserResponseDTO user = service.getUserByEmail(email);
 		return ResponseEntity.ok(user);
@@ -93,6 +96,7 @@ public class UserController {
 	@Operation(summary = "Obtiene usuarios por su firstName", description = "Retorna a los usuarios que coincida con el firstName")
 	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
 	@GetMapping("/firstname/{firstname}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<UserResponseDTO>> getUsersByFirstName(@PathVariable String firstname){
 		List<UserResponseDTO> users = service.getUsersByFirstName(firstname);
 		return ResponseEntity.ok(users);
@@ -101,6 +105,7 @@ public class UserController {
 	@Operation(summary = "Obtiene usuarios por su lastName", description = "Retorna a los usuarios que coincida con el lastName")
 	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
 	@GetMapping("/lastName/{lastName}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<UserResponseDTO>> getUserByLastName(@PathVariable String lastName){
 		List<UserResponseDTO> users = service.getUsersByLastName(lastName);
 		return ResponseEntity.ok(users);
@@ -111,6 +116,7 @@ public class UserController {
 	@ApiResponse(responseCode = "404", description = "El usuario no existe")
     @ApiResponse(responseCode = "400", description = "Estado no válido o error en la solicitud")
 	@PatchMapping("/{idUser}/state/{newState}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<Void> changeState(@PathVariable Long idUser, @PathVariable State newState){
 		service.changeState(idUser, newState);
 		return ResponseEntity.ok().build();	
@@ -130,6 +136,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Usuario reportado o reportero no encontrado")
     @ApiResponse(responseCode = "409", description = "Ya existe un reporte de este usuario hacia el objetivo (Duplicado)")
 	@PostMapping("/report")
+	@PreAuthorize("hasRole('ADMIN') or #dto.reporterUserId == authentication.principal.id")
 	public ResponseEntity<Void> addReportToUser(@RequestBody ReportCreateDTO dto){
 		service.addReport(dto); 
     	return ResponseEntity.ok().build();
