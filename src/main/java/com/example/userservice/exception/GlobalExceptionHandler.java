@@ -11,6 +11,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.access.AccessDeniedException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -81,6 +82,17 @@ public class GlobalExceptionHandler {
         LocalDateTime.now()
     );
     return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED); // El 401 es el correcto para login fallido
+    }
+
+    // MANEJO DE ACCESO DENEGADO - RECURSO PROHIBIDO (SEGURIDAD)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+        logger.warn("Acceso denegado: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            "No tienes permisos para realizar esta operación o acceder a este recurso.", 
+            LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403 Forbidden
     }
 }
 
