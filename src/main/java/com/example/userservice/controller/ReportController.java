@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,8 @@ public class ReportController {
 	@ApiResponse(responseCode = "409", description = "El usuario ya ha realizado una denuncia previa contra este perfil")
     @PostMapping
     public ResponseEntity<Void> createReport(@Valid @RequestBody ReportCreateDTO reportCreateDTO) {
-        reportService.addReport(reportCreateDTO);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        reportService.addReport(reportCreateDTO, email);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

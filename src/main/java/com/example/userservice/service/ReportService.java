@@ -21,33 +21,32 @@ public class ReportService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void addReport(ReportCreateDTO dto) {
+    public void addReport(ReportCreateDTO dto, String reporterEmail) {
+    // 1. Buscamos al denunciante (desde el email)
+    User reporter = userRepository.findByEmail(reporterEmail)
+            .orElseThrow(() -> new UserNotFoundException("Usuario denunciante no encontrado"));
 
-        //Validacion de autoReporte
-        if (dto.reporterUserId().equals(dto.reportedUserId())) { 
-            throw new SelfReportException(); 
-        }
+    // 2. Buscamos al denunciado (desde el ID del DTO)
+    User reported = userRepository.findById(dto.reportedUserId())
+            .orElseThrow(() -> new UserNotFoundException("Usuario denunciado no encontrado"));
 
-        // Buscamos al denunciante
-        User reporter = userRepository.findById(dto.reporterUserId())
-                .orElseThrow(() -> new UserNotFoundException("Usuario denunciante no encontrado"));
+    // 3. Validación de autoReporte (Usando los IDs reales de la DB)
+    if (reporter.getId().equals(reported.getId())) { 
+        throw new SelfReportException(); 
+    }
 
-        // Buscamos al denunciado (el reportedUserId de tu DTO)
-        User reported = userRepository.findById(dto.reportedUserId())
-                .orElseThrow(() -> new UserNotFoundException("Usuario denunciado no encontrado"));
+    // 4. Validación de duplicados (Usando el ID del denunciante recuperado)
+    if (reportRepository.existsByReporterUserIdAndReportedUserId(reporter.getId(), reported.getId())) {
+        throw new AlreadyReportedException();
+    }
 
-        // Validación de duplicados
-        if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())) {
-            throw new AlreadyReportedException();
-        }
-
-        Report report = Report.builder()
+    Report report = Report.builder()
             .reporterUserId(reporter.getId()) 
             .reportedUserId(reported.getId()) 
             .reason(dto.reason())
             .createdAt(LocalDateTime.now())
             .build();
 
-        reportRepository.save(report);
-    }
+    reportRepository.save(report);
+}
 }
