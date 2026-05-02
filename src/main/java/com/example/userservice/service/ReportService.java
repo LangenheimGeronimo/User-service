@@ -1,6 +1,7 @@
 package com.example.userservice.service;
 
 import com.example.userservice.exception.AlreadyReportedException;
+import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.model.entity.Report;
@@ -21,6 +22,12 @@ public class ReportService {
 
     @Transactional
     public void addReport(ReportCreateDTO dto) {
+
+        //Validacion de autoReporte
+        if (dto.reporterUserId().equals(dto.reportedUserId())) { 
+            throw new SelfReportException(); 
+        }
+
         // Buscamos al denunciante
         User reporter = userRepository.findById(dto.reporterUserId())
                 .orElseThrow(() -> new UserNotFoundException("Usuario denunciante no encontrado"));
@@ -30,7 +37,7 @@ public class ReportService {
                 .orElseThrow(() -> new UserNotFoundException("Usuario denunciado no encontrado"));
 
         // Validación de duplicados
-       if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())) {
+        if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())) {
             throw new AlreadyReportedException();
         }
 

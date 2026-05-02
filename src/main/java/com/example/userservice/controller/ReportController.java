@@ -2,7 +2,6 @@ package com.example.userservice.controller;
 
 import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.service.ReportService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

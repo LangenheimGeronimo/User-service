@@ -89,10 +89,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
         logger.warn("Acceso denegado: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
-            "No tienes permisos para realizar esta operación o acceder a este recurso.", 
+            ex.getMessage(), 
             LocalDateTime.now()
         );
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403 Forbidden
+    }
+
+    //MANEJO DE AUTOREPORTE
+    @ExceptionHandler(SelfReportException.class)
+    public ResponseEntity<ErrorResponse> handleSelfReport(SelfReportException ex) {
+        logger.warn("Intento de autoreporte denegado: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(), 
+            LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 }
 
