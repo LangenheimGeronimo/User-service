@@ -31,7 +31,7 @@ public class ReportService {
 
         // Validación de duplicados
        if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())) {
-            throw new AlreadyReportedException("Ya has realizado una denuncia contra este usuario");
+            throw new AlreadyReportedException();
         }
 
         Report report = Report.builder()
