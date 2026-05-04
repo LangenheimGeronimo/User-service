@@ -169,27 +169,4 @@ public class UserService {
 		return userMapper.toResponseDto(user);
 	}
 
-	@Transactional
-	public void addReport(ReportCreateDTO dto){ 
-		logger.info("Intento de realizar un reporte a un Usuario:");
-		if (reportRepository.existsByReporterUserIdAndReportedUserId(dto.reporterUserId(), dto.reportedUserId())){
-			throw new AlreadyReportedException();
-		}
-		Report report = reportMapper.toEntity(dto);
-		reportRepository.save(report);
-		logger.info("Reporte guardado exitosamente: {}", report);
-
-		long cont = reportRepository.countByReportedUserId(dto.reportedUserId());
-
-		if(cont >= 3){
-			User user = userRepository.findById(dto.reportedUserId()).orElseThrow(UserNotFoundException::new);
-    
-			user.setState(State.BANNED);
-			userRepository.save(user);
-			logger.warn("¡USUARIO BANEADO! El ID {} alcanzó los {} reportes.", dto.reportedUserId(), cont);
-		}
-	}
-
-	
-
 }

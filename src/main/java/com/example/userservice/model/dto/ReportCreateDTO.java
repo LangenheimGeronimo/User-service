@@ -9,9 +9,6 @@ public record ReportCreateDTO(
     @Size(max = 500, message = "El motivo no puede superar los 500 caracteres")
     String reason,
     
-    @NotNull(message = "El ID del denunciante es obligatorio")
-    Long reporterUserId,
-    
     @NotNull(message = "El ID del denunciado es obligatorio")
     Long reportedUserId
 ) {}
