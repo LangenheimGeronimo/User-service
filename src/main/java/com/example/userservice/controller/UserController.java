@@ -122,25 +122,6 @@ public class UserController {
 		return ResponseEntity.ok().build();	
 	}
 	
-	@Operation(summary = "Inicia sesion", description = "Comprueba el ingreso de las credenciales para verificar si son correctos")
-	@ApiResponse(responseCode = "200", description = "Credenciales correctas")
-	@ApiResponse(responseCode = "401", description = "Credenciales incorrectas")
-	@ApiResponse(responseCode = "410", description = "La cuenta se encuentra inhabilitada (DELETED)")
-	@PostMapping("/login")
-	public ResponseEntity<UserResponseDTO> login(@RequestBody LoginDTO dto) {
-    	return ResponseEntity.ok(service.login(dto));
-	}
-	
-	@Operation(summary = "Agregar un reporte", description = "Realiza un reporte a un usuario en especifico")
-	@ApiResponse(responseCode = "200", description = "Reporte registrado correctamente")
-    @ApiResponse(responseCode = "404", description = "Usuario reportado o reportero no encontrado")
-    @ApiResponse(responseCode = "409", description = "Ya existe un reporte de este usuario hacia el objetivo (Duplicado)")
-	@PostMapping("/report")
-	@PreAuthorize("hasRole('ADMIN') or #dto.reporterUserId == authentication.principal.id")
-	public ResponseEntity<Void> addReportToUser(@RequestBody ReportCreateDTO dto){
-		service.addReport(dto); 
-    	return ResponseEntity.ok().build();
-	}
 }
 
 

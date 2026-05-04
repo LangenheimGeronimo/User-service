@@ -9,10 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.userservice.model.dto.*;
-import com.example.userservice.model.entity.Report;
 import com.example.userservice.model.enums.*; 
 import com.example.userservice.model.entity.User;
-import com.example.userservice.exception.AlreadyReportedException;
 import com.example.userservice.exception.EmailAlreadyExistsException;
 import com.example.userservice.exception.InvalidLoginException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
@@ -26,8 +24,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
-	private final ReportMapper reportMapper;
-	private final ReportRepository reportRepository;
+
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	
@@ -35,8 +32,6 @@ public class UserService {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
 		this.passwordEncoder = passwordEncoder;
-		this.reportMapper = reportMapper;
-		this.reportRepository = reportRepository;
     }
 	
 	//POST
@@ -149,24 +144,6 @@ public class UserService {
 		logger.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
-	//SEGURIDAD
-
-	@Transactional
-	public UserResponseDTO login(LoginDTO dto) {
-		logger.info("Intento de login para el correo: {}", dto.email());
-		
-		User user = userRepository.findByEmail(dto.email()).orElseThrow(UserNotFoundException::new);
-
-		if (user.getState() == State.DELETED) {
-			throw new UserIsAlreadyDeletedException();
-		}
-
-		if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
-			throw new InvalidLoginException();
-		}
-
-		logger.info("Login exitoso para el usuario ID: {}", user.getId());
-		return userMapper.toResponseDto(user);
-	}
+	
 
 }
