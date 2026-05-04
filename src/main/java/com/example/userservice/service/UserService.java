@@ -1,18 +1,19 @@
 package com.example.userservice.service;
 
-import java.util.List;
-import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.specification.UserSpecifications;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.userservice.model.dto.*;
 import com.example.userservice.model.enums.*; 
 import com.example.userservice.model.entity.User;
 import com.example.userservice.exception.EmailAlreadyExistsException;
-import com.example.userservice.exception.InvalidLoginException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.mapper.*;
@@ -28,7 +29,7 @@ public class UserService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	
-	public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, ReportMapper reportMapper, ReportRepository reportRepository) {
+	public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
 		this.passwordEncoder = passwordEncoder;
@@ -49,18 +50,11 @@ public class UserService {
 		return userMapper.toResponseDto(savedUser);
 	}
 	
-
 	//GET
 	public UserResponseDTO getUser(Long idUser) {
 		logger.info("Intento de obtener por id: {}", idUser);
 		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 	    return userMapper.toResponseDto(user);
-	}
-	
-	//GET 
-	public List<UserResponseDTO> getUsers (){
-		logger.info("Intento de obtener todos los usuarios");
-		return userRepository.findAllByState(State.ACTIVE).stream().map(userMapper::toResponseDto).toList(); 
 	}
 	
 	// PUT
@@ -119,19 +113,6 @@ public class UserService {
 	}
 
 	
-	public List<UserResponseDTO> getUsersByFirstName(String firstName) {
-		logger.info("Intento de obtener usuarios por firstName: {}", firstName);
-	    List<User> users = userRepository.findByFirstNameAndState(firstName, State.ACTIVE);
-
-	    return users.stream().map(userMapper::toResponseDto).toList();
-	}
-	
-	
-	public List<UserResponseDTO> getUsersByLastName(String lastName) {
-		logger.info("Intento de obtener usuarios por lastName: {}", lastName);
-	    List<User> users = userRepository.findByLastNameAndState(lastName, State.ACTIVE);
-	    return users.stream().map(userMapper::toResponseDto).toList();
-	}
 	
 	//EXTRAS
 	@Transactional
@@ -144,6 +125,15 @@ public class UserService {
 		logger.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
-	
+	public Page<UserResponseDTO> getUsers(String firstName, String lastName, String email, State state, Pageable pageable) {
+		logger.info("Búsqueda avanzada de usuarios con filtros dinámicos");
+
+		Specification<User> spec = Specification.where(UserSpecifications.hasFirstName(firstName))
+				.and(UserSpecifications.hasLastName(lastName))
+				.and(UserSpecifications.hasEmail(email))
+				.and(UserSpecifications.hasState(state));
+
+		return userRepository.findAll(spec, pageable).map(userMapper::toResponseDto);
+	}
 
 }

@@ -1,6 +1,8 @@
 package com.example.userservice.controller;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,10 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import com.example.userservice.model.dto.*;
@@ -51,15 +56,6 @@ public class UserController {
 		return ResponseEntity.ok(user);
 	}
 	
-	@Operation(summary = "Obtiene todos los usuarios", description = "Retorna los datos de todos los usuarios si existen")
-	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
-	@GetMapping
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<UserResponseDTO>> getUsers(){
-		List<UserResponseDTO> users = service.getUsers();
-		return ResponseEntity.ok(users);
-	}
-	
 	@Operation(summary = "Borra un usuario por id", description = "Borra un usuario en la base de datos por id")
     @ApiResponse(responseCode = "204", description = "Usuario borrado exitosamente")
 	@ApiResponse(responseCode = "404", description = "Usuario no existe")
@@ -93,24 +89,6 @@ public class UserController {
 		return ResponseEntity.ok(user);
 	}
 
-	@Operation(summary = "Obtiene usuarios por su firstName", description = "Retorna a los usuarios que coincida con el firstName")
-	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
-	@GetMapping("/firstname/{firstname}")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<UserResponseDTO>> getUsersByFirstName(@PathVariable String firstname){
-		List<UserResponseDTO> users = service.getUsersByFirstName(firstname);
-		return ResponseEntity.ok(users);
-	}
-
-	@Operation(summary = "Obtiene usuarios por su lastName", description = "Retorna a los usuarios que coincida con el lastName")
-	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
-	@GetMapping("/lastName/{lastName}")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<UserResponseDTO>> getUserByLastName(@PathVariable String lastName){
-		List<UserResponseDTO> users = service.getUsersByLastName(lastName);
-		return ResponseEntity.ok(users);
-	}
-
 	@Operation(summary = "cambia el estado", description = "Notifica el estado de un usuario")
 	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
 	@ApiResponse(responseCode = "404", description = "El usuario no existe")
@@ -122,6 +100,44 @@ public class UserController {
 		return ResponseEntity.ok().build();	
 	}
 	
+	@Operation(
+        summary = "Obtener lista paginada de usuarios con filtros",
+        description = "Permite al administrador buscar usuarios aplicando filtros opcionales por nombre, apellido, email o estado. Soporta paginación y ordenamiento."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Operación exitosa. Devuelve una página de usuarios."
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "No autorizado. El token JWT es inválido o expiró."
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "Prohibido. Se requiere rol de ADMIN para acceder."
+        )
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<Page<UserResponseDTO>> getUsers(
+        @Parameter(description = "Filtrar por nombre (búsqueda parcial)") 
+        @RequestParam(required = false) String firstName,
+        
+        @Parameter(description = "Filtrar por apellido (búsqueda parcial)") 
+        @RequestParam(required = false) String lastName,
+        
+        @Parameter(description = "Filtrar por email exacto") 
+        @RequestParam(required = false) String email,
+        
+        @Parameter(description = "Filtrar por estado del usuario (ACTIVE, BANNED, DELETED)") 
+        @RequestParam(required = false) State state,
+        
+        @Parameter(hidden = true) 
+        @PageableDefault(size = 10, sort = "id") Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getUsers(firstName, lastName, email, state, pageable));
+    }
 }
 
 
