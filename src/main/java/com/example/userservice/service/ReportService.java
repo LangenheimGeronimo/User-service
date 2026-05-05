@@ -14,7 +14,7 @@ import com.example.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
+
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +37,6 @@ public class ReportService {
                 .reporterUserId(reporter.getId()) 
                 .reportedUserId(reported.getId()) 
                 .reason(dto.reason())
-                .createdAt(LocalDateTime.now())
                 .build();
 
         reportRepository.save(report);

@@ -17,7 +17,7 @@ import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends Auditable{
 	
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -25,7 +25,6 @@ public class User {
 	
 	private String firstName;
 	private String lastName;
-	
 	private LocalDate birthDate;
 	
 	@Transient 
