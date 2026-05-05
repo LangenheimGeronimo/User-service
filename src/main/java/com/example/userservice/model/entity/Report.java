@@ -18,7 +18,7 @@ public class Report extends Auditable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reason", nullable = false, length = 500) // Limitamos longitud
+    @Column(name = "reason", nullable = false, length = 500) 
     private String reason;
 
 
