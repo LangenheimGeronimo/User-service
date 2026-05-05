@@ -9,5 +9,5 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     
     long countByReportedUserId(Long reportedUserId);
 
-    boolean existsByReporterUserIdAndReportedUserId(Long reporterUserId, Long reportedUserId);
+    boolean existsByReporterUserIdAndReportedUserId(Long reporterUserId, Long reportedUserId); //CORREGIR
 }

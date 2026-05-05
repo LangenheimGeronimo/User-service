@@ -112,8 +112,6 @@ public class UserService {
 	    return userMapper.toResponseDto(user);
 	}
 
-	
-	
 	//EXTRAS
 	@Transactional
 	public void changeState(Long idUser, State newState) {
@@ -125,13 +123,14 @@ public class UserService {
 		logger.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
+
 	public Page<UserResponseDTO> getUsers(String firstName, String lastName, String email, State state, Pageable pageable) {
 		logger.info("Búsqueda avanzada de usuarios con filtros dinámicos");
 
 		Specification<User> spec = Specification.where(UserSpecifications.hasFirstName(firstName))
-				.and(UserSpecifications.hasLastName(lastName))
-				.and(UserSpecifications.hasEmail(email))
-				.and(UserSpecifications.hasState(state));
+												.and(UserSpecifications.hasLastName(lastName))
+												.and(UserSpecifications.hasEmail(email))
+												.and(UserSpecifications.hasState(state));
 
 		return userRepository.findAll(spec, pageable).map(userMapper::toResponseDto);
 	}

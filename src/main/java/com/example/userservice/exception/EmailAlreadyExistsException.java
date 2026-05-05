@@ -2,7 +2,7 @@ package com.example.userservice.exception;
 
 public class EmailAlreadyExistsException extends RuntimeException{
     public EmailAlreadyExistsException() {
-        super("Email already in use");
+        super("Resource not found");
     }
 
     public EmailAlreadyExistsException(String message) {

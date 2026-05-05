@@ -100,6 +100,7 @@ public class UserController {
 		return ResponseEntity.ok().build();	
 	}
 	
+	//Metodo de busqueda por diversos filtros
 	@Operation(
         summary = "Obtener lista paginada de usuarios con filtros",
         description = "Permite al administrador buscar usuarios aplicando filtros opcionales por nombre, apellido, email o estado. Soporta paginación y ordenamiento."
@@ -134,7 +135,7 @@ public class UserController {
         @RequestParam(required = false) State state,
         
         @Parameter(hidden = true) 
-        @PageableDefault(size = 10, sort = "id") Pageable pageable
+        @PageableDefault(size = 10, sort = "id") Pageable pageable 
     ) {
         return ResponseEntity.ok(service.getUsers(firstName, lastName, email, state, pageable));
     }
