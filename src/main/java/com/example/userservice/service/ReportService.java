@@ -69,7 +69,27 @@ public class ReportService {
     @Transactional
     public void deleteReportById(Long id) {
         Report report = reportRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
+
+        Long reportedUserId = report.getReportedUserId();
         
         reportRepository.delete(report);
+
+        reportRepository.flush();
+
+        reEvaluateUserStatus(reportedUserId);
+    }
+
+    private void reEvaluateUserStatus(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        // Si es ADMIN, no tocamos nada (por seguridad)
+        if (user.getRole() == Role.ADMIN) return;
+
+        long currentReports = reportRepository.countByReportedUserId(userId);
+
+        if (currentReports < MAX_REPORTS_BEFORE_BAN && user.getState() == State.BANNED) {
+            user.setState(State.ACTIVE);
+            userRepository.save(user);
+        }
     }
 }
