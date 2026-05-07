@@ -14,6 +14,9 @@ import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.UserStatusHistoryRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,7 @@ public class ReportService {
     private final NotificationService notificationService;
     
     private static final int MAX_REPORTS_BEFORE_BAN = 3;
+    private static final int BAN_DAYS = 7;
 
     @Transactional
     public void addReport(ReportCreateDTO dto, String reporterEmail) {
@@ -76,9 +80,12 @@ public class ReportService {
         State oldState = user.getState();
 
         if (currentReports >= MAX_REPORTS_BEFORE_BAN && oldState != State.BANNED) {
+            LocalDateTime banUntil = LocalDateTime.now().plusDays(BAN_DAYS);
+            user.setBanUntil(banUntil);
             updateUserStatus(user, State.BANNED, "Automatic ban: reports reached " + currentReports);
         } 
         else if (currentReports < MAX_REPORTS_BEFORE_BAN && oldState == State.BANNED) {
+            user.setBanUntil(null);
             updateUserStatus(user, State.ACTIVE, "Automatic reactivation: reports dropped to " + currentReports);
         }
     }

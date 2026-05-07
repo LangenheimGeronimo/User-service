@@ -1,6 +1,7 @@
 package com.example.userservice.model.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.example.userservice.model.enums.Role;
@@ -38,4 +39,7 @@ public class User extends Auditable {
     @Transient 
     @Builder.Default 
     private List<Long> orderIds = new ArrayList<>();
+
+    @Column(name = "ban_until")
+    private LocalDateTime banUntil;
 }

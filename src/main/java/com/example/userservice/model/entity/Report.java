@@ -25,7 +25,6 @@ public class Report extends Auditable{
     @Column(name = "reason", nullable = false, length = 500) 
     private String reason;
 
-
     @Column(name = "reported_user_id", nullable = false)
     private Long reportedUserId;
 
