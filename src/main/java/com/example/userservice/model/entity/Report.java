@@ -1,5 +1,7 @@
 package com.example.userservice.model.entity;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder 
+@SQLDelete(sql = "UPDATE reports SET active = false WHERE id = ?") 
+@SQLRestriction("active = true") 
 public class Report extends Auditable{
     
     @Id
@@ -28,5 +32,7 @@ public class Report extends Auditable{
     @Column(name = "reporter_user_id", nullable = false)
     private Long reporterUserId;
 
+    @Builder.Default
+    private boolean active = true;
 }
 
