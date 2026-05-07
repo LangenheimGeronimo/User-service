@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserStatusHistory extends Auditable {
+public class UserStatusHistory extends Auditable { 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,3 +30,4 @@ public class UserStatusHistory extends Auditable {
     @Column(name = "reason", length = 500)
     private String reason;
 }
+

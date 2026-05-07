@@ -41,7 +41,7 @@ public class ReportController {
     @Operation(
         summary = "Eliminar un reporte (ADMIN)", 
         description = "Permite a un administrador eliminar un reporte específico por su ID. Útil para limpiar denuncias injustas o procesadas.",
-        security = @SecurityRequirement(name = "bearerAuth")
+        security = @SecurityRequirement(name = "bearerAuth") 
     )
     @ApiResponse(responseCode = "204", description = "Reporte eliminado correctamente")
     @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol de ADMINISTRADOR")

@@ -13,7 +13,6 @@ import com.example.userservice.model.enums.State;
 import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.UserStatusHistoryRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +25,8 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final UserStatusHistoryRepository userStatusHistoryRepository;
+    private final NotificationService notificationService;
+    
     private static final int MAX_REPORTS_BEFORE_BAN = 3;
 
     @Transactional
@@ -34,7 +35,7 @@ public class ReportService {
 
         User reported = userRepository.findById(dto.reportedUserId()).orElseThrow(UserNotFoundException::new);
 
-        validateReporte(reporter, reported);
+        validateReport(reporter, reported);
         Report report = Report.builder()
                 .reporterUserId(reporter.getId()) 
                 .reportedUserId(reported.getId()) 
@@ -42,36 +43,15 @@ public class ReportService {
                 .build();
 
         reportRepository.save(report);
-        checkAndApplyBan(reported);
+        reEvaluateUserStatus(reported.getId());
     }
 
-    private void validateReporte(User reporter, User reported) {
+    private void validateReport(User reporter, User reported) {
         if (reporter.getId().equals(reported.getId())) { 
             throw new SelfReportException(); 
         }
         if (reportRepository.existsByReporterUserIdAndReportedUserId(reporter.getId(), reported.getId())) {
             throw new AlreadyReportedException();
-        }
-    }
-
-    private void checkAndApplyBan(User user) {
-        if (user.getRole() == Role.ADMIN || user.getState() == State.BANNED) {
-            return; 
-        }
-
-        long reportCount = reportRepository.countByReportedUserId(user.getId());
-        
-        if (reportCount >= MAX_REPORTS_BEFORE_BAN) {
-            State oldState = user.getState(); 
-            user.setState(State.BANNED);
-            userRepository.save(user);
-
-            userStatusHistoryRepository.save(UserStatusHistory.builder()
-                .userId(user.getId())
-                .previousState(oldState)
-                .newState(State.BANNED)
-                .reason("Automatic ban: reached " + reportCount + " reports.")
-                .build());
         }
     }
 
@@ -88,26 +68,36 @@ public class ReportService {
         reEvaluateUserStatus(reportedUserId);
     }
 
-
     private void reEvaluateUserStatus(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() == Role.ADMIN) return;
 
-    if (user.getRole() == Role.ADMIN) return;
-
-    long currentReports = reportRepository.countByReportedUserId(userId);
-
-    if (currentReports < MAX_REPORTS_BEFORE_BAN && user.getState() == State.BANNED) {
+        long currentReports = reportRepository.countByReportedUserId(userId);
         State oldState = user.getState();
-        user.setState(State.ACTIVE);
+
+        if (currentReports >= MAX_REPORTS_BEFORE_BAN && oldState != State.BANNED) {
+            updateUserStatus(user, State.BANNED, "Automatic ban: reports reached " + currentReports);
+        } 
+        else if (currentReports < MAX_REPORTS_BEFORE_BAN && oldState == State.BANNED) {
+            updateUserStatus(user, State.ACTIVE, "Automatic reactivation: reports dropped to " + currentReports);
+        }
+    }
+
+    private void updateUserStatus(User user, State newState, String reason) {
+        State oldState = user.getState();
+        user.setState(newState);
         userRepository.save(user);
 
-        // Registramos el "perdón" en el historial
         userStatusHistoryRepository.save(UserStatusHistory.builder()
-            .userId(user.getId())
-            .previousState(oldState)
-            .newState(State.ACTIVE)
-            .reason("Automatic reactivation: reports dropped to " + currentReports)
-            .build());
+                .userId(user.getId())
+                .previousState(oldState)
+                .newState(newState)
+                .reason(reason)
+                .build());
+
+        notificationService.sendStatusChangeNotification(user.getEmail(), newState.name(), reason);
     }
-}
+
+    
+
 }

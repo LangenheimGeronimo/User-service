@@ -29,3 +29,4 @@ public class Report extends Auditable{
     private Long reporterUserId;
 
 }
+
