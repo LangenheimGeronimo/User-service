@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder 
 @SQLDelete(sql = "UPDATE reports SET active = false WHERE id = ?") 
 @SQLRestriction("active = true") 
+@EqualsAndHashCode(callSuper = false)
 public class Report extends Auditable{
     
     @Id

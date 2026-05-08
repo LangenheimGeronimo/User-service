@@ -10,5 +10,19 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  user-app:
+    build: .
+    container_name: user-service-app
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mysql-db
+    environment:
+      # IMPORTANTE: Acá usamos 'mysql-db' en vez de 'localhost' 
+      # porque entre contenedores se llaman por su nombre de servicio.
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/user_service_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
 volumes:
   mysql_data:
