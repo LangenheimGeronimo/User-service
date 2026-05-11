@@ -14,9 +14,7 @@ import com.example.userservice.repository.ReportRepository;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.UserStatusHistoryRepository;
 import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDateTime;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +47,7 @@ public class ReportService {
         reportRepository.save(report);
         reEvaluateUserStatus(reported.getId());
     }
+    
 
     private void validateReport(User reporter, User reported) {
         if (reporter.getId().equals(reported.getId())) { 
@@ -62,13 +61,9 @@ public class ReportService {
     @Transactional
     public void deleteReportById(Long id) {
         Report report = reportRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
-
         Long reportedUserId = report.getReportedUserId();
-        
         reportRepository.delete(report);
-
         reportRepository.flush();
-
         reEvaluateUserStatus(reportedUserId);
     }
 
@@ -105,6 +100,7 @@ public class ReportService {
         notificationService.sendStatusChangeNotification(user.getEmail(), newState.name(), reason);
     }
 
+    
     
 
 }
