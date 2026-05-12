@@ -23,6 +23,7 @@ import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.exception.EmailAlreadyExistsException;
+import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.mapper.UserMapper; // Si usas MapStruct
 
 @ExtendWith(MockitoExtension.class)
@@ -89,6 +90,42 @@ class UserServiceTest {
         verify(passwordEncoder, never()).encode(anyString());
         verify(userMapper, never()).toEntity(any());
     }
+
+
+    //getUser:
+
+    void getUser_ShouldReturnUserResponseDTO_WhenUserExists() {
+        Long idUser = 1L;
+        User user = User.builder().id(1L).firstName("Geronimo").lastName("Langenheim")
+                    .email("geronimo@email.com").state(State.ACTIVE).build();
+        UserResponseDTO responseDTO = new UserResponseDTO(1L, "Geronimo", 
+                            "Langenheim", "geronimo@email.com", 
+                            LocalDate.of(2004, 4, 19), Role.USER, State.ACTIVE, List.of());           
+        
+        when(userRepository.findById(idUser)).thenReturn(Optional.of(user));
+        when(userMapper.toResponseDto(user)).thenReturn((responseDTO));
+        
+        UserResponseDTO resultado = userService.getUser(idUser);
+        
+        assertNotNull(resultado);
+        assertEquals("Geronimo", resultado.firstName());
+        verify(userRepository, times(1)).findById(idUser);
+    }
+
+    @Test
+    void getUser_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
+        Long idInexistente = 99L;
+        
+        when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser(idInexistente);
+        });
+
+        verify(userRepository, times(1)).findById(idInexistente);
+        verify(userMapper, never()).toResponseDto(any());
+    }
+
 
 
 }
