@@ -45,6 +45,7 @@ public class UserService {
 		User userEntity = userMapper.toEntity(dto);
 		userEntity.setState(State.ACTIVE);
 		userEntity.setPassword(passwordEncoder.encode(dto.password()));
+
 		User savedUser = userRepository.save(userEntity);	
 		logger.info("Usuario guardado exitosamente: {}", savedUser.getId());
 		return userMapper.toResponseDto(savedUser);
@@ -102,8 +103,6 @@ public class UserService {
 		State userState = user.getState();
 		return userState;
 	}
-
-	//BUSQUEDAS:
 	
 	public UserResponseDTO getUserByEmail(String email) {
 		logger.info("Intento de obtener un usuario por email: {}", email);
