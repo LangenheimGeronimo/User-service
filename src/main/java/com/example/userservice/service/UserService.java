@@ -94,7 +94,6 @@ public class UserService {
 		logger.info("Usuario eliminado correctamente: {}", idUser);
     	userRepository.save(user);
 	}
-
 	
 	//GET
 	public State getState(Long idUser) {	

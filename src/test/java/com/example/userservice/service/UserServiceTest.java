@@ -208,4 +208,44 @@ class UserServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+
+    //deleteUser:
+    @Test
+    void deleteUser_ShouldChangeStateToDeletedAndSave_WhenUserExists() {
+        Long idUser = 1L;
+        User user = User.builder().id(idUser).state(State.ACTIVE).build();
+
+        when(userRepository.findById(idUser)).thenReturn(Optional.of(user));
+
+        userService.deleteUser(idUser);
+
+        assertEquals(State.DELETED, user.getState()); 
+        verify(userRepository, times(1)).findById(idUser);
+        verify(userRepository, times(1)).save(user); 
+    }
+
+
+    @Test
+    void deleteUser_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
+        Long idInexistente = 99L;
+        when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(idInexistente));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+
+    @Test
+    void deleteUser_ShouldThrowUserIsAlreadyDeletedException_WhenUserIsAlreadyDeleted() {
+        Long idUser = 1L;
+        User deletedUser = User.builder().id(idUser).state(State.DELETED).build();
+
+        when(userRepository.findById(idUser)).thenReturn(Optional.of(deletedUser));
+
+        assertThrows(UserIsAlreadyDeletedException.class, () -> userService.deleteUser(idUser));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
 }
