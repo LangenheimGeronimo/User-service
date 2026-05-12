@@ -104,6 +104,7 @@ public class UserService {
 		return userState;
 	}
 	
+	//GET/email
 	public UserResponseDTO getUserByEmail(String email) {
 		logger.info("Intento de obtener un usuario por email: {}", email);
 	    User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
@@ -111,7 +112,7 @@ public class UserService {
 	    return userMapper.toResponseDto(user);
 	}
 
-	//EXTRAS
+	//EXTRA
 	@Transactional
 	public void changeState(Long idUser, State newState) {
 		logger.info("Intento de cambiar de estado de un usuario por id: {}", idUser);
@@ -122,7 +123,7 @@ public class UserService {
 		logger.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
-
+	//GET
 	public Page<UserResponseDTO> getUsers(String firstName, String lastName, String email, State state, Pageable pageable) {
 		logger.info("Búsqueda avanzada de usuarios con filtros dinámicos");
 
