@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.example.userservice.exception.AlreadyReportedException;
+import com.example.userservice.exception.ResourceNotFoundException;
 import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.ReportCreateDTO;
@@ -40,10 +41,13 @@ class ReportServiceTest {
     @InjectMocks
     private ReportService reportService;
 
+    //addReport:
+
     @Test
     void addReport_ShouldSaveReportAndNotBan_WhenReportsUnderLimit() {
         String reporterEmail = "reporter@test.com";
         ReportCreateDTO dto = new ReportCreateDTO("Spam", 2L);
+
         User reporter = User.builder().id(1L).email(reporterEmail).build();
         User reported = User.builder().id(2L).role(Role.USER).state(State.ACTIVE).build();
 
@@ -55,7 +59,7 @@ class ReportServiceTest {
         reportService.addReport(dto, reporterEmail);
 
         verify(reportRepository, times(1)).save(any(Report.class));
-        verify(userRepository, never()).save(any(User.class)); // No debería banearse aún
+        verify(userRepository, never()).save(any(User.class)); 
         verify(notificationService, never()).sendStatusChangeNotification(any(), any(), any());
     }
 
@@ -121,7 +125,6 @@ class ReportServiceTest {
 
         when(userRepository.findByEmail(reporterEmail)).thenReturn(Optional.of(reporter));
         when(userRepository.findById(reportedId)).thenReturn(Optional.of(reported));
-
         when(reportRepository.existsByReporterUserIdAndReportedUserId(1L, 2L)).thenReturn(true);
 
         assertThrows(AlreadyReportedException.class, () -> {
@@ -130,6 +133,7 @@ class ReportServiceTest {
 
         verify(reportRepository, never()).save(any(Report.class));
     }
+
 
     @Test
     void addReport_ShouldBanUser_WhenReportsReachLimit() {
@@ -147,8 +151,85 @@ class ReportServiceTest {
 
         verify(reportRepository).save(any(Report.class));
         verify(userRepository).save(reported); 
-        
         verify(notificationService).sendStatusChangeNotification(any(), any(), any());
     }
+
+
+    @Test
+    void addReport_ShouldNotBanAdmin_EvenIfReportsReachLimit() {
+        String reporterEmail = "reporter@test.com";
+        ReportCreateDTO dto = new ReportCreateDTO("Spam", 2L);
+        User reporter = User.builder().id(1L).email(reporterEmail).build();
+        
+        User reportedAdmin = User.builder().id(2L).role(Role.ADMIN).state(State.ACTIVE).build();
+
+        when(userRepository.findByEmail(reporterEmail)).thenReturn(Optional.of(reporter));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(reportedAdmin));
+        when(reportRepository.countByReportedUserId(2L)).thenReturn(5L); 
+
+        reportService.addReport(dto, reporterEmail);
+
+        verify(reportRepository).save(any(Report.class));
+        verify(userRepository, never()).save(reportedAdmin);
+        assert(reportedAdmin.getState() == State.ACTIVE);
+    }
+
+    //deleteReportById
+
+    @Test
+    void deleteReportById_ShouldReactivateUser_WhenReportsDropBelowLimit() {
+        Long reportId = 10L;
+        Long reportedUserId = 2L;
+        User reported = User.builder().id(reportedUserId).role(Role.USER).state(State.BANNED).build();
+        Report report = Report.builder().id(reportId).reportedUserId(reportedUserId).build();
+
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
+        when(userRepository.findById(reportedUserId)).thenReturn(Optional.of(reported));
+        when(reportRepository.countByReportedUserId(reportedUserId)).thenReturn(1L);
+
+        reportService.deleteReportById(reportId);
+
+        verify(reportRepository).delete(report);
+        verify(userRepository).save(reported);
+        
+        assert(reported.getState() == State.ACTIVE);
+        assert(reported.getBanUntil() == null);
+        verify(notificationService).sendStatusChangeNotification(any(), any(), any());
+    }
+
+    @Test
+    void deleteReportById_ShouldThrowResourceNotFoundException_WhenReportDoesNotExist() {
+        Long reportId = 999L;
+        when(reportRepository.findById(reportId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            reportService.deleteReportById(reportId);
+        });
+
+        verify(reportRepository, never()).delete(any());
+    }
+
+
+    @Test
+    void deleteReportById_ShouldDeleteSuccessfully_AndKeepUserBannedIfReportsStillHigh() {
+        Long reportId = 10L;
+        Long reportedUserId = 2L;
+        User reported = User.builder().id(reportedUserId).role(Role.USER).state(State.BANNED).build();
+        Report report = Report.builder().id(reportId).reportedUserId(reportedUserId).build();
+
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
+        when(userRepository.findById(reportedUserId)).thenReturn(Optional.of(reported));
+        when(reportRepository.countByReportedUserId(reportedUserId)).thenReturn(3L);
+       
+        reportService.deleteReportById(reportId);
+        
+        verify(reportRepository).delete(report); 
+        verify(reportRepository).flush();       
+        
+        verify(userRepository, never()).save(any(User.class)); 
+        assert(reported.getState() == State.BANNED); 
+    }
+
+
 
 }

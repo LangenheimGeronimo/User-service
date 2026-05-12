@@ -27,14 +27,12 @@ public class ReportService {
     private final UserRepository userRepository;
     private final UserStatusHistoryRepository userStatusHistoryRepository;
     private final NotificationService notificationService;
-    
     private static final int MAX_REPORTS_BEFORE_BAN = 3;
     private static final int BAN_DAYS = 7;
 
     @Transactional
     public void addReport(ReportCreateDTO dto, String reporterEmail) {
         User reporter = userRepository.findByEmail(reporterEmail).orElseThrow(UserNotFoundException::new);
-
         User reported = userRepository.findById(dto.reportedUserId()).orElseThrow(UserNotFoundException::new);
 
         validateReport(reporter, reported);
