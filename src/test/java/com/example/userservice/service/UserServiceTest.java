@@ -248,4 +248,34 @@ class UserServiceTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+
+    //getUserByEmail:
+    @Test
+    void getState_ShouldReturnState_WhenUserExists() {
+        Long idUser = 1L;
+        User user = User.builder().id(idUser).state(State.ACTIVE).build();
+
+        when(userRepository.findById(idUser)).thenReturn(Optional.of(user));
+
+        State resultado = userService.getState(idUser);
+
+        assertNotNull(resultado);
+        assertEquals(State.ACTIVE, resultado);
+        verify(userRepository, times(1)).findById(idUser);
+    }
+
+
+    @Test
+    void getState_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
+        Long idInexistente = 99L;
+        when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.getState(idInexistente));
+
+        verify(userRepository, times(1)).findById(idInexistente);
+    }
+
+
+
+
 }
