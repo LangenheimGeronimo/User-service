@@ -309,4 +309,36 @@ class UserServiceTest {
         verify(userMapper, never()).toResponseDto(any());
     }
 
+
+    //changeState:
+
+    @Test
+    void changeState_ShouldUpdateStateAndSave_WhenUserExists() {
+        Long idUser = 1L;
+        State nuevoEstado = State.BANNED;
+        User user = User.builder().id(idUser).state(State.ACTIVE).build();
+
+        when(userRepository.findById(idUser)).thenReturn(Optional.of(user));
+
+        userService.changeState(idUser, nuevoEstado);
+
+        assertEquals(nuevoEstado, user.getState()); 
+        verify(userRepository, times(1)).findById(idUser);
+        verify(userRepository, times(1)).save(user); 
+    }
+
+    @Test
+    void changeState_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
+        Long idInexistente = 99L;
+        State nuevoEstado = State.ACTIVE;
+        when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> 
+            userService.changeState(idInexistente, nuevoEstado)
+        );
+
+        verify(userRepository, times(1)).findById(idInexistente);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
 }
