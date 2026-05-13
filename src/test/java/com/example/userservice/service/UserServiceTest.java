@@ -5,20 +5,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.model.dto.UserCreateDTO;
 import com.example.userservice.model.dto.UserResponseDTO;
-import com.example.userservice.model.entity.Report;
 import com.example.userservice.model.entity.User;
 import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
@@ -26,7 +27,9 @@ import com.example.userservice.repository.UserRepository;
 import com.example.userservice.exception.EmailAlreadyExistsException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
-import com.example.userservice.mapper.UserMapper; // Si usas MapStruct
+import com.example.userservice.mapper.UserMapper; 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -339,6 +342,35 @@ class UserServiceTest {
 
         verify(userRepository, times(1)).findById(idInexistente);
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    //getUsers:
+
+    @Test
+    void getUsers_ShouldReturnPageOfUserResponseDTO_WhenFiltersAreApplied() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+        User user = User.builder().id(1L).firstName("Geronimo").email("geronimo@email.com").build();
+        UserResponseDTO responseDTO = new UserResponseDTO(1L, "Geronimo", "Langenheim", 
+                                        "geronimo@email.com", LocalDate.of(2004, 4, 19), 
+                                        Role.USER, State.ACTIVE, List.of());
+        
+        // Creamos una página con nuestro usuario
+        Page<User> userPage = new PageImpl<>(List.of(user));
+
+        // Mockeamos el repositorio para que acepte CUALQUIER Specification y el pageable
+        when(userRepository.findAll(ArgumentMatchers.<Specification<User>>any(), eq(pageable))).thenReturn(userPage);
+        when(userMapper.toResponseDto(user)).thenReturn(responseDTO);
+
+        // Act
+        Page<UserResponseDTO> resultado = userService.getUsers("Geronimo", null, null, null, pageable);
+
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.getTotalElements());
+        assertEquals("Geronimo", resultado.getContent().get(0).firstName());
+        
+        verify(userRepository, times(1)).findAll(any(Specification.class), eq(pageable));
     }
 
 }
