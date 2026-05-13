@@ -275,7 +275,38 @@ class UserServiceTest {
         verify(userRepository, times(1)).findById(idInexistente);
     }
 
+    //getUserByEmail:
+
+    @Test
+    void getUserByEmail_ShouldReturnUserResponseDTO_WhenEmailExists() {
+        String email = "geronimo@email.com";
+        User user = User.builder().id(1L).email(email).firstName("Geronimo").state(State.ACTIVE).build();
+                
+        UserResponseDTO responseDTO = new UserResponseDTO(
+                1L, "Geronimo", "Langenheim", email, 
+                LocalDate.of(2004, 4, 19), Role.USER, State.ACTIVE, List.of()
+        );
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(userMapper.toResponseDto(user)).thenReturn(responseDTO);
+
+        UserResponseDTO resultado = userService.getUserByEmail(email);
+
+        assertNotNull(resultado);
+        assertEquals(email, resultado.email());
+        verify(userRepository, times(1)).findByEmail(email);
+    }
 
 
+    @Test
+    void getUserByEmail_ShouldThrowUserNotFoundException_WhenEmailDoesNotExist() {
+        String emailInexistente = "noexiste@email.com";
+        when(userRepository.findByEmail(emailInexistente)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.getUserByEmail(emailInexistente));
+
+        verify(userRepository, times(1)).findByEmail(emailInexistente);
+        verify(userMapper, never()).toResponseDto(any());
+    }
 
 }
