@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.userservice.exception.AlreadyReportedException;
+import com.example.userservice.exception.ResourceNotFoundException;
 import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.security.JwtUtils;
@@ -38,6 +39,7 @@ class ReportControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService; 
 
+    //createReport:
     @SuppressWarnings("null")
     @Test
     @WithMockUser(username = "gero@test.com")
@@ -103,6 +105,16 @@ class ReportControllerTest {
                 .andExpect(jsonPath("$.message").value("No puedes reportarte a ti mismo"));
     }
 
+
+    //deleteReport:
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 204 al eliminar un reporte existosamente como ADMIN")
+    void deleteReport_Success() throws Exception {
+        mockMvc.perform(delete("/api/v1/reports/{id}", 1L))
+                .andExpect(status().isNoContent()); 
+    }
+
     @Test
     @WithMockUser(roles = "USER") 
     @DisplayName("Debe retornar 403 al intentar eliminar un reporte sin ser ADMIN")
@@ -110,6 +122,16 @@ class ReportControllerTest {
         mockMvc.perform(delete("/api/v1/reports/1"))
                 .andExpect(status().isForbidden());
     }
+    
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 404 cuando se intenta eliminar un reporte que no existe")
+    void deleteReport_NotFound() throws Exception {
+        doThrow(new ResourceNotFoundException())
+            .when(reportService).deleteReportById(999L);
 
+        mockMvc.perform(delete("/api/v1/reports/{id}", 999L))
+                .andExpect(status().isNotFound());
+    }
 
 }
