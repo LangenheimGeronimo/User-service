@@ -3,7 +3,9 @@ package com.example.userservice.controller;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +26,8 @@ import com.example.userservice.service.ReportService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 @WebMvcTest(ReportController.class) 
 class ReportControllerTest {
 
@@ -36,7 +40,8 @@ class ReportControllerTest {
     @MockitoBean
     private JwtUtils jwtUtils;
 
-    @MockitoBean
+    
+    @MockitoBean(name = "userDetailsServiceImpl")
     private UserDetailsService userDetailsService; 
 
     //createReport:
