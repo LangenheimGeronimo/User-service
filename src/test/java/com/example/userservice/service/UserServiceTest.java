@@ -50,7 +50,7 @@ class UserServiceTest {
     //createUser:
 
     @Test
-    void saveUser_ShouldEncryptPasswordAndSave_WhenUserIsValid() {
+    void createUser_ShouldEncryptPasswordAndSave_WhenUserIsValid() {
         UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", 
         "geronimo@email.com", "mipassword1234", 
         LocalDate.of(2004, 4, 19), Role.USER);
@@ -98,7 +98,7 @@ class UserServiceTest {
 
 
     //getUser:
-
+    @Test
     void getUser_ShouldReturnUserResponseDTO_WhenUserExists() {
         Long idUser = 1L;
         User user = User.builder().id(1L).firstName("Geronimo").lastName("Langenheim")
@@ -132,7 +132,7 @@ class UserServiceTest {
     }
 
     //editUser:
-
+    @Test
     void editUser_ShouldReturnUpdatedUserResponseDTO_WhenUserExists() {
         UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", "geronimo@email.com", "mipassword1234", 
                         LocalDate.of(2004, 4, 19), Role.USER);
@@ -348,24 +348,19 @@ class UserServiceTest {
 
     @Test
     void getUsers_ShouldReturnPageOfUserResponseDTO_WhenFiltersAreApplied() {
-        // Arrange
         Pageable pageable = PageRequest.of(0, 10);
         User user = User.builder().id(1L).firstName("Geronimo").email("geronimo@email.com").build();
         UserResponseDTO responseDTO = new UserResponseDTO(1L, "Geronimo", "Langenheim", 
                                         "geronimo@email.com", LocalDate.of(2004, 4, 19), 
                                         Role.USER, State.ACTIVE, List.of());
         
-        // Creamos una página con nuestro usuario
         Page<User> userPage = new PageImpl<>(List.of(user));
 
-        // Mockeamos el repositorio para que acepte CUALQUIER Specification y el pageable
         when(userRepository.findAll(ArgumentMatchers.<Specification<User>>any(), eq(pageable))).thenReturn(userPage);
         when(userMapper.toResponseDto(user)).thenReturn(responseDTO);
 
-        // Act
         Page<UserResponseDTO> resultado = userService.getUsers("Geronimo", null, null, null, pageable);
 
-        // Assert
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
         assertEquals("Geronimo", resultado.getContent().get(0).firstName());
