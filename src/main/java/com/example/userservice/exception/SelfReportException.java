@@ -5,3 +5,4 @@ public class SelfReportException extends RuntimeException{
         super("Un usuario no puede denunciarse a sí mismo.");
     }
 }
+//

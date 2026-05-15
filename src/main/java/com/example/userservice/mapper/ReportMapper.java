@@ -11,7 +11,7 @@ public interface ReportMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "active", ignore = true)
-    
+    @Mapping(target = "reporterUserId", ignore = true)
     Report toEntity(ReportCreateDTO dto);
 
     ReportCreateDTO toDTO(Report entity);

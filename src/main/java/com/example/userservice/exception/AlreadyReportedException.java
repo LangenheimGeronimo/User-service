@@ -5,3 +5,5 @@ public class AlreadyReportedException extends RuntimeException{
         super("El usuario ya ha realizado una denuncia previa contra este perfil.");
     }
 }
+
+
