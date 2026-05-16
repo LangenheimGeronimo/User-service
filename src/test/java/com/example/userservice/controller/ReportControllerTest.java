@@ -12,13 +12,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-// Seguridad e Imports de Spring
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import com.example.userservice.config.SecurityConfig;
 
-// Mockito y MockMvc
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -28,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
-// Tus clases
 import com.example.userservice.exception.AlreadyReportedException;
 import com.example.userservice.exception.ResourceNotFoundException;
 import com.example.userservice.exception.SelfReportException;
@@ -44,7 +41,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @WebMvcTest(ReportController.class) 
-@Import(SecurityConfig.class) // Importa tu configuración con @EnableMethodSecurity
+@Import(SecurityConfig.class) 
 class ReportControllerTest {
 
     @Autowired
