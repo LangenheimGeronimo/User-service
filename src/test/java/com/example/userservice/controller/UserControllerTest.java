@@ -18,6 +18,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 
 import com.example.userservice.config.SecurityConfig;
 import com.example.userservice.exception.EmailAlreadyExistsException;
+import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.UserCreateDTO;
 import com.example.userservice.model.dto.UserResponseDTO;
@@ -209,7 +210,53 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").exists()); 
     }
 
+    //deleteUser: 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 204 al borrar un usuario")
+    void deleteUser() throws Exception {
+        Long idUser = 1L;
 
+        mockMvc.perform(delete("/users/{idUser}", idUser)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
+    
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 404 al borrar un usuario que no existe")
+    void deleteUser_NotFound() throws Exception {
+        Long idInexistente = 99L;
 
+        doThrow(new UserNotFoundException())
+            .when(userService).deleteUser(idInexistente);
+
+        mockMvc.perform(delete("/users/{idUser}", idInexistente)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 410 al borrar un usuario que ya fue eliminado anteriormente")
+    void deleteUser_IsGone() throws Exception {
+        Long idInexistente = 99L;
+
+        doThrow(new UserIsAlreadyDeletedException())
+            .when(userService).deleteUser(idInexistente);
+
+        mockMvc.perform(delete("/users/{idUser}", idInexistente)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.message").value("La cuenta se encuentra inhabilitada.")) 
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").doesNotExist());
+    }
 
 }

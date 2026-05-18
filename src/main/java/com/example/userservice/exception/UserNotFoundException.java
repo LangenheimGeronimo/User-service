@@ -2,7 +2,7 @@ package com.example.userservice.exception;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException() {
-        super("User not exists");
+        super("Usuario no encontrado.");
     }
 
     public UserNotFoundException(String message) {
