@@ -114,5 +114,13 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
+
+    //MANEJO DE ESTADO INVALIDADO
+    @ExceptionHandler(InvalidStateException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidState(InvalidStateException ex) {
+        logger.warn("Estado inválido: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
+    }
 }
 

@@ -18,6 +18,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 
 import com.example.userservice.config.SecurityConfig;
 import com.example.userservice.exception.EmailAlreadyExistsException;
+import com.example.userservice.exception.InvalidStateException;
+import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.UserCreateDTO;
@@ -30,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -435,5 +438,59 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
+
+    //changeState:
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 200 al cambiar el estado del usuario exitosamente")
+    void changeState_success() throws Exception {
+        Long idUser = 1L;
+        State newState = State.ACTIVE;
+
+        mockMvc.perform(patch("/users/{idUser}/state/{newState}", idUser, newState)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk()); 
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 404 al intentar cambiar el estado de un usuario inexistente")
+    void changeState_notFound() throws Exception {
+        Long idInexistente = 99L;
+        State newState = State.ACTIVE;
+
+        doThrow(new UserNotFoundException()).when(userService).changeState(idInexistente, newState);
+
+        mockMvc.perform(patch("/users/{idUser}/state/{newState}", idInexistente, newState)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 400 cuando ocurre un error en la solicitud de cambio de estado")
+    void changeState_badRequest() throws Exception {
+        Long idUser = 1L;
+        State newState = State.ACTIVE;
+
+        doThrow(new InvalidStateException())
+                .when(userService).changeState(idUser, newState);
+
+        mockMvc.perform(patch("/users/{idUser}/state/{newState}", idUser, newState)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El estado enviado no es válido para esta operación."))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
 }
 
