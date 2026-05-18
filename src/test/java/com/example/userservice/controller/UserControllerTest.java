@@ -42,6 +42,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import com.example.userservice.security.JwtAuthenticationFilter;
 import com.example.userservice.security.JwtUtils;
 import com.example.userservice.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,6 +69,9 @@ class UserControllerTest {
 
     @MockitoBean
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean(name = "userDetailsServiceImpl")
     private UserDetailsService userDetailsService; 
@@ -255,6 +259,127 @@ class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.message").value("La cuenta se encuentra inhabilitada.")) 
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").doesNotExist());
+    }
+
+    //updateUser:
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 200 al editar un usuario exitosamente")
+    void updateUser() throws Exception {
+        Long idUser = 1L;
+        UserCreateDTO userCreateDTO = new UserCreateDTO(
+            "Geronimo",
+            "Langenheim",
+            "geronimo@email.com",
+            "Password123!",
+            LocalDate.of(2004, 4, 19), 
+            Role.ADMIN
+        );
+        UserResponseDTO mockResponse = new UserResponseDTO(
+            idUser,
+            "Geronimo",
+            "Langenheim",
+            "geronimo@email.com",
+            LocalDate.of(2004, 4, 19),
+            Role.ADMIN,
+            State.ACTIVE,
+            List.of(101L, 102L) 
+        );
+
+        when(userService.editUser(idUser, userCreateDTO)).thenReturn(mockResponse);
+
+        mockMvc.perform(put("/users/{idUser}", idUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(idUser))
+                .andExpect(jsonPath("$.firstName").value("Geronimo"))
+                .andExpect(jsonPath("$.email").value("geronimo@email.com"));
+    }
+
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 400 al editar un usuario por datos de entrada invalidos")
+    void updateUser_data_invalid() throws Exception {
+        Long idUser = 1L;
+        UserCreateDTO userCreateDTO = new UserCreateDTO(
+            "Geronimo",
+            "Langenheim",
+            "geronimo", 
+            "Password123!",
+            LocalDate.of(2004, 4, 19), 
+            Role.ADMIN
+        );
+
+        mockMvc.perform(put("/users/{idUser}", idUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error de validación"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").exists()) 
+                .andExpect(jsonPath("$.errors.email").exists());
+    }
+
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 404 al no encontrar el id del usuario a editar")
+    void updateUser_idNotValid() throws Exception {
+        Long idUserInexistente = 99L;
+        UserCreateDTO userCreateDTO = new UserCreateDTO(
+            "Geronimo",
+            "Langenheim",
+            "geronimo@email.com", 
+            "Password123!",
+            LocalDate.of(2004, 4, 19), 
+            Role.ADMIN
+        );
+
+        when(userService.editUser(idUserInexistente, userCreateDTO)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(put("/users/{idUser}", idUserInexistente)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").doesNotExist());
+    }
+
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 409 al detectar que el email es duplicado")
+    void updateUser_emailduplicated() throws Exception {
+        Long idUser = 1L;
+        UserCreateDTO userCreateDTO = new UserCreateDTO(
+            "Geronimo",
+            "Langenheim",
+            "geronimo@email.com", 
+            "Password123!",
+            LocalDate.of(2004, 4, 19), 
+            Role.ADMIN
+        );
+
+        when(userService.editUser(idUser, userCreateDTO)).thenThrow(new EmailAlreadyExistsException());
+
+        mockMvc.perform(put("/users/{idUser}", idUser)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("El email ya se encuentra registrado en el sistema."))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
