@@ -18,7 +18,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 
 import com.example.userservice.config.SecurityConfig;
 import com.example.userservice.exception.EmailAlreadyExistsException;
+import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.UserCreateDTO;
+import com.example.userservice.model.dto.UserResponseDTO;
+import com.example.userservice.model.enums.Role;
+import com.example.userservice.model.enums.State;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,6 +31,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
@@ -150,4 +158,58 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
+
+    //getUser:
+    @Test
+    @WithMockUser
+    @DisplayName("Debe retornar 200 al obtener un user por ID válido")
+    void getUser_Success() throws Exception {
+        Long idUser = 1L;
+        
+        UserResponseDTO mockResponse = new UserResponseDTO(
+            idUser,
+            "Geronimo",
+            "Langenheim",
+            "geronimo@email.com",
+            LocalDate.of(2004, 4, 19), // 19/04/2004
+            Role.USER,
+            State.ACTIVE,
+            List.of(101L, 102L) 
+        );
+
+        when(userService.getUser(idUser)).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/users/{idUser}", idUser)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk()) 
+                .andExpect(jsonPath("$.id").value(idUser))
+                .andExpect(jsonPath("$.firstName").value("Geronimo"))
+                .andExpect(jsonPath("$.lastName").value("Langenheim"))
+                .andExpect(jsonPath("$.email").value("geronimo@email.com"))
+                .andExpect(jsonPath("$.birthDate").value("19/04/2004")) 
+                .andExpect(jsonPath("$.role").value("USER"))
+                .andExpect(jsonPath("$.state").value("ACTIVE"))
+                .andExpect(jsonPath("$.orderIds[0]").value(101))
+                .andExpect(jsonPath("$.orderIds[1]").value(102));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("Debe retornar 404 cuando el usuario no existe")
+    void getUser_NotFound() throws Exception {
+        Long idInexistente = 99L;
+        
+        when(userService.getUser(idInexistente)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(get("/users/{idUser}", idInexistente)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound()) 
+                .andExpect(jsonPath("$.message").exists()); 
+    }
+
+
+
+
 }
