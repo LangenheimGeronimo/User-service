@@ -384,4 +384,56 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
+
+    //getUserByEmail:
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 200 al obtener un user por email")
+    void getUser_byEmail() throws Exception {
+        String email = "geronimo@email.com";
+        
+        UserResponseDTO mockResponse = new UserResponseDTO(
+            1L,
+            "Geronimo",
+            "Langenheim",
+            email,
+            LocalDate.of(2004, 4, 19),
+            Role.ADMIN,
+            State.ACTIVE,
+            List.of(101L, 102L) 
+        );
+
+        when(userService.getUserByEmail(email)).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/users/email/{email}", email)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.firstName").value("Geronimo"));
+    }
+
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 404 al no obtener el usuario")
+    void getUser_byEmail_notFound() throws Exception {
+        String email = "geronimo@email.com";
+        
+        when(userService.getUserByEmail(email)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(get("/users/email/{email}", email)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.errors").doesNotExist());
+    }
+
 }
+
