@@ -5,26 +5,26 @@ import org.hibernate.annotations.SQLRestriction;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "reports")
-@Data 
+@Getter 
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder 
 @SQLDelete(sql = "UPDATE reports SET active = false WHERE id = ?") 
 @SQLRestriction("active = true") 
-@EqualsAndHashCode(callSuper = false)
 public class Report extends Auditable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reason", nullable = false, length = 500) 
+    @Column(nullable = false, length = 500) 
     private String reason;
 
     @Column(name = "reported_user_id", nullable = false)
@@ -35,5 +35,17 @@ public class Report extends Auditable{
 
     @Builder.Default
     private boolean active = true;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Report report)) return false;
+        return id != null && id.equals(report.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
 
