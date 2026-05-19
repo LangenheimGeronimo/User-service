@@ -6,7 +6,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "user_status_history")
-@Data
+@Getter 
+@Setter 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -20,14 +21,25 @@ public class UserStatusHistory extends Auditable {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "previous_state")
+    @Column(name = "previous_state") 
     private State previousState;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "new_state", nullable = false)
+    @Column(nullable = false) 
     private State newState;
 
-    @Column(name = "reason", length = 500)
+    @Column(length = 500) 
     private String reason;
-}
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserStatusHistory that)) return false;
+        return id != null && id.equals(that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+}
