@@ -27,4 +27,8 @@ public record UserResponseDTO(
     State state,
     @Schema(description = "Lista de IDs de pedidos asociados al usuario", example = "[101, 102]")
     List<Long> orderIds
-) {}
+) {
+    public UserResponseDTO {
+        orderIds = (orderIds == null) ? List.of() : List.copyOf(orderIds);
+    }
+}
