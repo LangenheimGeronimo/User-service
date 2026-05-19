@@ -7,12 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -492,5 +498,76 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("El estado enviado no es válido para esta operación."))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
+
+
+    //getUsers:
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 200 al obtener la lista pagitada de usuarios con filtros")
+    void getUsers_success() throws Exception {
+        UserResponseDTO userMock = new UserResponseDTO(
+            1L,
+            "Geronimo",
+            "Langenheim",
+            "geronimo@email.com",
+            LocalDate.of(2004, 4, 19),
+            Role.ADMIN,
+            State.ACTIVE,
+            List.of(101L, 102L)
+        );
+
+        List<UserResponseDTO> userList = List.of(userMock);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("id"));
+        Page<UserResponseDTO> mockPage = new PageImpl<>(userList, pageable, userList.size());
+
+        when(userService.getUsers(any(), any(), any(), any(), any(Pageable.class))).thenReturn(mockPage);
+
+        mockMvc.perform(get("/users")
+                .param("firstName", "Geronimo")
+                .param("state", "ACTIVE")
+                .param("page", "0")
+                .param("size", "10")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1L))
+                .andExpect(jsonPath("$.content[0].email").value("geronimo@email.com"))
+                .andExpect(jsonPath("$.content[0].firstName").value("Geronimo"))
+                .andExpect(jsonPath("$.pageable.pageSize").value(10))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Debe retornar 401 cuando el token JWT es inválido o expiró")
+    void getUsers_unauthorized() throws Exception {
+        doThrow(new BadCredentialsException("Error de autenticación: Token inválido"))
+                .when(userService).getUsers(any(), any(), any(), any(), any(Pageable.class));
+
+        mockMvc.perform(get("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Error de autenticación: Token inválido"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER") 
+    @DisplayName("Debe retornar 403 cuando el usuario no tiene el rol de ADMIN")
+    void getUsers_forbidden() throws Exception {
+
+        mockMvc.perform(get("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+
 }
 
