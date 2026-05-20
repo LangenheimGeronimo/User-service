@@ -1,6 +1,7 @@
 package com.example.userservice.mapper;
 
 import com.example.userservice.model.dto.ReportCreateDTO;
+import com.example.userservice.model.dto.ReportResponseDTO;
 import com.example.userservice.model.entity.Report;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,5 +15,5 @@ public interface ReportMapper {
     @Mapping(target = "reporterUserId", ignore = true)
     Report toEntity(ReportCreateDTO dto);
 
-    ReportCreateDTO toDTO(Report entity);
+    ReportResponseDTO toResponseDto(Report entity);
 }
