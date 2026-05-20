@@ -30,6 +30,7 @@ import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.UserCreateDTO;
 import com.example.userservice.model.dto.UserResponseDTO;
+import com.example.userservice.model.dto.UserUpdateDTO;
 import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
 
@@ -278,14 +279,14 @@ class UserControllerTest {
     @DisplayName("Debe retornar 200 al editar un usuario exitosamente")
     void updateUser() throws Exception {
         Long idUser = 1L;
-        UserCreateDTO userCreateDTO = new UserCreateDTO(
+        
+        // 1. Instanciamos el nuevo UserUpdateDTO con los campos reales de actualización
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(
             "Geronimo",
             "Langenheim",
-            "geronimo@email.com",
-            "Password123!",
-            LocalDate.of(2004, 4, 19), 
-            Role.ADMIN
+            LocalDate.of(2004, 4, 19)
         );
+        
         UserResponseDTO mockResponse = new UserResponseDTO(
             idUser,
             "Geronimo",
@@ -297,17 +298,19 @@ class UserControllerTest {
             List.of(101L, 102L) 
         );
 
-        when(userService.editUser(idUser, userCreateDTO)).thenReturn(mockResponse);
+        // 2. Mockeamos el servicio con la firma del nuevo DTO
+        when(userService.editUser(idUser, userUpdateDTO)).thenReturn(mockResponse);
 
+        // 3. Ejecutamos el PUT enviando el nuevo JSON estructurado
         mockMvc.perform(put("/users/{idUser}", idUser)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .content(objectMapper.writeValueAsString(userUpdateDTO)) // Serializa el nuevo DTO
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(idUser))
                 .andExpect(jsonPath("$.firstName").value("Geronimo"))
-                .andExpect(jsonPath("$.email").value("geronimo@email.com"));
+                .andExpect(jsonPath("$.email").value("geronimo@email.com")); // La respuesta sigue trayendo el email, está perfecto
     }
 
 
@@ -316,25 +319,24 @@ class UserControllerTest {
     @DisplayName("Debe retornar 400 al editar un usuario por datos de entrada invalidos")
     void updateUser_data_invalid() throws Exception {
         Long idUser = 1L;
-        UserCreateDTO userCreateDTO = new UserCreateDTO(
-            "Geronimo",
-            "Langenheim",
-            "geronimo", 
-            "Password123!",
-            LocalDate.of(2004, 4, 19), 
-            Role.ADMIN
+        
+        // Enviamos un UserUpdateDTO roto (nombre en blanco para activar el @NotBlank)
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(
+            "", 
+            "Langenheim", 
+            LocalDate.of(2004, 4, 19)
         );
 
         mockMvc.perform(put("/users/{idUser}", idUser)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .content(objectMapper.writeValueAsString(userUpdateDTO)) // Enviamos el nuevo DTO
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Error de validación"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").exists()) 
-                .andExpect(jsonPath("$.errors.email").exists());
+                .andExpect(jsonPath("$.errors.firstName").exists()); // 👈 Ahora el error salta en firstName
     }
 
 
@@ -343,52 +345,25 @@ class UserControllerTest {
     @DisplayName("Debe retornar 404 al no encontrar el id del usuario a editar")
     void updateUser_idNotValid() throws Exception {
         Long idUserInexistente = 99L;
-        UserCreateDTO userCreateDTO = new UserCreateDTO(
+        
+        // 1. Cambiado al nuevo UserUpdateDTO
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(
             "Geronimo",
             "Langenheim",
-            "geronimo@email.com", 
-            "Password123!",
-            LocalDate.of(2004, 4, 19), 
-            Role.ADMIN
+            LocalDate.of(2004, 4, 19)
         );
 
-        when(userService.editUser(idUserInexistente, userCreateDTO)).thenThrow(new UserNotFoundException());
+        // 2. Mockeamos el servicio con la firma del nuevo DTO
+        when(userService.editUser(idUserInexistente, userUpdateDTO)).thenThrow(new UserNotFoundException());
 
+        // 3. Ejecutamos el PUT serializando el nuevo DTO
         mockMvc.perform(put("/users/{idUser}", idUserInexistente)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userCreateDTO))
+                .content(objectMapper.writeValueAsString(userUpdateDTO))
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.errors").doesNotExist());
-    }
-
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Debe retornar 409 al detectar que el email es duplicado")
-    void updateUser_emailduplicated() throws Exception {
-        Long idUser = 1L;
-        UserCreateDTO userCreateDTO = new UserCreateDTO(
-            "Geronimo",
-            "Langenheim",
-            "geronimo@email.com", 
-            "Password123!",
-            LocalDate.of(2004, 4, 19), 
-            Role.ADMIN
-        );
-
-        when(userService.editUser(idUser, userCreateDTO)).thenThrow(new EmailAlreadyExistsException());
-
-        mockMvc.perform(put("/users/{idUser}", idUser)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userCreateDTO))
-                .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("El email ya se encuentra registrado en el sistema."))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }

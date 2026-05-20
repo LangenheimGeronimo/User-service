@@ -60,24 +60,21 @@ public class UserService {
 	
 	// PUT
 	@Transactional
-	public UserResponseDTO editUser(Long idUser, UserCreateDTO dto) {
+	public UserResponseDTO editUser(Long idUser, UserUpdateDTO dto) {
 		logger.info("Intento de editar un usuario por id: {}", idUser);
-	    User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
-	    
-	    if(user.getState() == State.DELETED) {
-	    	throw new UserIsAlreadyDeletedException(); 
-	    }
+		
+		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
+		
+		if (user.getState() == State.DELETED) {
+			throw new UserIsAlreadyDeletedException(); 
+		}
 
-	    if (!user.getEmail().equals(dto.email()) && userRepository.existsByEmail(dto.email())) {
-	    	throw new EmailAlreadyExistsException();
-	    }
-	
 		userMapper.updateEntityFromDto(dto, user); 
-		user.setPassword(passwordEncoder.encode(dto.password()));
 
-	    User updatedUser = userRepository.save(user);
+		User updatedUser = userRepository.save(user);
+		
 		logger.info("Usuario editado y guardado correctamente: {}", updatedUser.getId());
-	    return userMapper.toResponseDto(updatedUser);
+		return userMapper.toResponseDto(updatedUser);
 	}
 
 	//DELETE

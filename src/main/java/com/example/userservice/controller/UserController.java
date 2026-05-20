@@ -75,7 +75,7 @@ public class UserController {
 	@ApiResponse(responseCode = "409", description = "El email ya está siendo usado por otro usuario")
 	@PutMapping("/{idUser}")
 	@PreAuthorize("hasRole('ADMIN') or #idUser == authentication.principal.id")
-	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @Valid @RequestBody UserCreateDTO dto) {
+	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @Valid @RequestBody UserUpdateDTO dto) {
 		UserResponseDTO user = service.editUser(idUser, dto);
 		return ResponseEntity.ok(user);
 	}

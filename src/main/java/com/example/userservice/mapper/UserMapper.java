@@ -1,13 +1,15 @@
 package com.example.userservice.mapper;
 
-import com.example.userservice.model.dto.*;
+import com.example.userservice.model.dto.UserCreateDTO;
+import com.example.userservice.model.dto.UserResponseDTO;
+import com.example.userservice.model.dto.UserUpdateDTO;
 import com.example.userservice.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface UserMapper {
 
     UserResponseDTO toResponseDto(User user);
@@ -15,10 +17,17 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "orderIds", ignore = true)
     @Mapping(target = "state", ignore = true)
+    @Mapping(target = "banUntil", ignore = true)
     User toEntity(UserCreateDTO userDto);
 
     @Mapping(target = "id", ignore = true) 
+    @Mapping(target = "email", ignore = true)
     @Mapping(target = "password", ignore = true) 
     @Mapping(target = "state", ignore = true) 
-    void updateEntityFromDto(UserCreateDTO dto, @MappingTarget User entity);
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "orderIds", ignore = true)
+    @Mapping(target = "banUntil", ignore = true)
+    @Mapping(target = "createdAt", ignore = true) 
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntityFromDto(UserUpdateDTO dto, @MappingTarget User entity);
 }

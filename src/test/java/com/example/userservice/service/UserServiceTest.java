@@ -20,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.userservice.model.dto.UserCreateDTO;
 import com.example.userservice.model.dto.UserResponseDTO;
+import com.example.userservice.model.dto.UserUpdateDTO;
 import com.example.userservice.model.entity.User;
 import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
@@ -134,37 +135,36 @@ class UserServiceTest {
     //editUser:
     @Test
     void editUser_ShouldReturnUpdatedUserResponseDTO_WhenUserExists() {
-        UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", "geronimo@email.com", "mipassword1234", 
-                        LocalDate.of(2004, 4, 19), Role.USER);
+        UserUpdateDTO updateDto = new UserUpdateDTO("Geronimo", "Langenheim", LocalDate.of(2004, 4, 19));
         Long idUser = 1L;
+        
         User userEntity = User.builder().firstName("Geronimo").lastName("Langenheim")
                         .email("geronimo@email.com").build();
         User savedUser = User.builder().id(1L).firstName("Geronimo").lastName("Langenheim")
                         .email("geronimo@email.com").state(State.ACTIVE).build();
+                        
         UserResponseDTO responseDTO = new UserResponseDTO(1L, "Geronimo", 
                             "Langenheim", "geronimo@email.com", 
                             LocalDate.of(2004, 4, 19), Role.USER, State.ACTIVE, List.of());
         
         when(userRepository.findById(idUser)).thenReturn(Optional.of(userEntity));
-        when(passwordEncoder.encode(dto.password())).thenReturn(("passwordHash"));
         when(userRepository.save(any(User.class))).thenReturn(savedUser); 
         when(userMapper.toResponseDto(savedUser)).thenReturn(responseDTO);
 
-        UserResponseDTO resultado = userService.editUser(idUser, dto);
+        UserResponseDTO resultado = userService.editUser(idUser, updateDto);
 
         assertNotNull(resultado);
         assertEquals("Geronimo", resultado.firstName());
         
         verify(userRepository).findById(idUser);
-        verify(userMapper).updateEntityFromDto(eq(dto), eq(userEntity)); 
+        verify(userMapper).updateEntityFromDto(eq(updateDto), eq(userEntity)); 
         verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     void editUser_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long idInexistente = 99L;
-        UserCreateDTO dto = new UserCreateDTO("Nombre", "Apellido", "email@test.com", "pass123", 
-                                LocalDate.of(2004, 4, 19), Role.USER);
+        UserUpdateDTO dto = new UserUpdateDTO("Nombre", "Apellido", LocalDate.of(2004, 4, 19));
         
         when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
@@ -173,41 +173,20 @@ class UserServiceTest {
         });
 
         verify(userRepository, times(1)).findById(idInexistente);
-        verify(passwordEncoder, never()).encode(anyString());
         verify(userMapper, never()).updateEntityFromDto(any(), any());
         verify(userRepository, never()).save(any(User.class));
     }
 
-
     @Test
     void editUser_ShouldThrowUserIsAlreadyDeletedException_WhenUserIsDeleted() {
         Long idUser = 1L;
-        UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", "gero@email.com", 
-                "pass", LocalDate.now(), Role.USER);
+        UserUpdateDTO dto = new UserUpdateDTO("Geronimo", "Langenheim", LocalDate.now());
         User deletedUser = User.builder().id(idUser).state(State.DELETED).build();
 
         when(userRepository.findById(idUser)).thenReturn(Optional.of(deletedUser));
 
         assertThrows(UserIsAlreadyDeletedException.class, () -> userService.editUser(idUser, dto));
 
-        verify(userRepository, never()).save(any());
-        verify(passwordEncoder, never()).encode(anyString());
-    }
-
-
-    @Test
-    void editUser_ShouldThrowEmailAlreadyExistsException_WhenNewEmailIsTaken() {
-        Long idUser = 1L;
-        String nuevoEmail = "otro@email.com";
-        UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", nuevoEmail, "pass", LocalDate.now(), Role.USER);
-        User userInDb = User.builder().id(idUser).email("viejo@email.com").state(State.ACTIVE).build();
-
-        when(userRepository.findById(idUser)).thenReturn(Optional.of(userInDb));
-        when(userRepository.existsByEmail(nuevoEmail)).thenReturn(true);
-
-        assertThrows(EmailAlreadyExistsException.class, () -> userService.editUser(idUser, dto));
-
-        verify(userMapper, never()).updateEntityFromDto(any(), any());
         verify(userRepository, never()).save(any());
     }
 
