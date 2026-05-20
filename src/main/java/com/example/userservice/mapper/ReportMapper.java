@@ -4,9 +4,9 @@ import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.model.entity.Report;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface ReportMapper {
 
     @Mapping(target = "id", ignore = true)

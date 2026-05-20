@@ -31,3 +31,4 @@ public interface UserMapper {
     @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromDto(UserUpdateDTO dto, @MappingTarget User entity);
 }
+
