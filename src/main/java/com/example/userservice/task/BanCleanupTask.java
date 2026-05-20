@@ -1,6 +1,5 @@
 package com.example.userservice.task;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,14 @@ public class BanCleanupTask {
     public void autoUnbanUsers() {
 
         log.info("Running auto-unban task...");
-        List<User> usersToUnban = userRepository.findByStateAndBanUntilBefore(State.BANNED, LocalDateTime.now());
+        List<User> expiredBans = userRepository.findExpiredBans(State.BANNED);
 
-        usersToUnban.forEach(user -> {
+        if (expiredBans.isEmpty()) {
+            log.info("No expired bans found.");
+            return;
+        }
+
+        expiredBans.forEach(user -> {
             user.setState(State.ACTIVE);
             user.setBanUntil(null);
             userRepository.save(user);
