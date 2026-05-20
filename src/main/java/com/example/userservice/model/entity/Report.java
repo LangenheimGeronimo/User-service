@@ -9,8 +9,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Entity
-@Table(name = "reports")
+@Table(name = "reports", indexes = {
+    @Index(name = "idx_report_reported", columnList = "reported_user_id"),
+    @Index(name = "idx_report_unique_pair", columnList = "reporter_user_id, reported_user_id") 
+})
 @Getter 
 @Setter
 @NoArgsConstructor
