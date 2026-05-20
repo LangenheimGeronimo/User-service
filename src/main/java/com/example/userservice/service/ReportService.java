@@ -4,6 +4,7 @@ import com.example.userservice.exception.AlreadyReportedException;
 import com.example.userservice.exception.ResourceNotFoundException;
 import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.exception.UserNotFoundException;
+import com.example.userservice.mapper.ReportMapper;
 import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.model.entity.Report;
 import com.example.userservice.model.entity.User;
@@ -25,6 +26,7 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
+    private final ReportMapper reportMapper;
     private final UserStatusHistoryRepository userStatusHistoryRepository;
     private final NotificationService notificationService;
     private static final int MAX_REPORTS_BEFORE_BAN = 3;
@@ -36,11 +38,10 @@ public class ReportService {
         User reported = userRepository.findById(dto.reportedUserId()).orElseThrow(UserNotFoundException::new);
 
         validateReport(reporter, reported);
-        Report report = Report.builder()
-                .reporterUserId(reporter.getId()) 
-                .reportedUserId(reported.getId()) 
-                .reason(dto.reason())
-                .build();
+
+        Report report = reportMapper.toEntity(dto);
+        
+        report.setReporterUserId(reporter.getId()); 
 
         reportRepository.save(report);
         reEvaluateUserStatus(reported.getId());

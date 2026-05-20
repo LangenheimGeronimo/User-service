@@ -3,11 +3,13 @@ package com.example.userservice.service;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +19,7 @@ import com.example.userservice.exception.AlreadyReportedException;
 import com.example.userservice.exception.ResourceNotFoundException;
 import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.exception.UserNotFoundException;
+import com.example.userservice.mapper.ReportMapper;
 import com.example.userservice.model.dto.ReportCreateDTO;
 import com.example.userservice.model.entity.Report;
 import com.example.userservice.model.entity.User;
@@ -37,9 +40,22 @@ class ReportServiceTest {
     private UserStatusHistoryRepository userStatusHistoryRepository;
     @Mock
     private NotificationService notificationService;
-
+    @Mock
+    private ReportMapper reportMapper;
     @InjectMocks
     private ReportService reportService;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(reportMapper.toEntity(any(ReportCreateDTO.class)))
+                .thenAnswer(invocation -> {
+                    ReportCreateDTO dto = invocation.getArgument(0);
+                    return Report.builder()
+                            .reason(dto.reason())
+                            .reportedUserId(dto.reportedUserId())
+                            .build();
+                });
+    }
 
     //addReport:
 
