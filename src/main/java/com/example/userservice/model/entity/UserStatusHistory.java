@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "user_status_history")
+@Table(name = "user_status_history", indexes = {
+    @Index(name = "idx_status_history_user", columnList = "user_id") // 👈 Índice para optimizar findByUserId
+})
 @Getter 
 @Setter 
 @NoArgsConstructor
