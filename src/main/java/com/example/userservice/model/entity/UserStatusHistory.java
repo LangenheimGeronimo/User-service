@@ -6,7 +6,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "user_status_history", indexes = {
-    @Index(name = "idx_status_history_user", columnList = "user_id") // 👈 Índice para optimizar findByUserId
+    @Index(name = "idx_status_history_user", columnList = "user_id") 
 })
 @Getter 
 @Setter 
