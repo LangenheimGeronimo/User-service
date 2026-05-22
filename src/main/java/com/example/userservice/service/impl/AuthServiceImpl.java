@@ -7,8 +7,7 @@ import com.example.userservice.security.JwtUtils;
 import com.example.userservice.security.UserPrincipal;
 import com.example.userservice.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,17 +15,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
 
-    // REPASAR SOOLO PARA VER SI SE ENTENDIO
     @Override
     public AuthResponse login(LoginDTO loginDto) {
-        logger.info("Iniciando proceso de login para el usuario: {}", loginDto.email());
+        log.info("Iniciando proceso de login para el usuario: {}", loginDto.email());
         // 1. Autenticación
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -36,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
         // 2. Búsqueda del usuario
         var user = userRepository.findByEmail(loginDto.email())
                 .orElseThrow(() -> {
-                    logger.error("ERROR LÓGICO: El AuthenticationManager validó al usuario {}, pero no existe en la DB", loginDto.email());
+                    log.error("ERROR LÓGICO: El AuthenticationManager validó al usuario {}, pero no existe en la DB", loginDto.email());
                     return new UsernameNotFoundException("Credenciales inválidas o cuenta inexistente");
                 });
 
