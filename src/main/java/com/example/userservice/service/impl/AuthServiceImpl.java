@@ -25,20 +25,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginDTO loginDto) {
         log.info("Iniciando proceso de login para el usuario: {}", loginDto.email());
-        // 1. Autenticación
+        // Autenticación
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.email(),
-                        loginDto.password()));
+                        loginDto.password())
+        );
 
-        // 2. Búsqueda del usuario
         var user = userRepository.findByEmail(loginDto.email())
                 .orElseThrow(() -> {
                     log.error("ERROR LÓGICO: El AuthenticationManager validó al usuario {}, pero no existe en la DB", loginDto.email());
                     return new UsernameNotFoundException("Credenciales inválidas o cuenta inexistente");
                 });
 
-        // 3. Generación del token (Envolvemos el 'user' en 'UserPrincipal')
         String token = jwtUtils.generateToken(new UserPrincipal(user));
 
         return new AuthResponse(token);
