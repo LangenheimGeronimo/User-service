@@ -2,20 +2,18 @@ package com.example.userservice.security;
 
 import com.example.userservice.model.entity.User;
 import com.example.userservice.model.enums.State;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class UserPrincipal implements UserDetails {
 
     // El objeto User original queda encapsulado y protegido
     private final User user; 
-
-    public UserPrincipal(User user) {
-        this.user = user;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
