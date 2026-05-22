@@ -4,9 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,19 +17,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtUtils jwtUtils;
-    private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(
-            JwtUtils jwtUtils, 
-            @Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService 
-    ) {
-        this.jwtUtils = jwtUtils;
-        this.userDetailsService = userDetailsService;
-    }
+    private final UserDetailsService userDetailsServiceImpl;
 
     @Override
     protected void doFilterInternal(
@@ -56,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 2. Si hay email y no está ya autenticado
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                UserDetails userDetails = this.userDetailsServiceImpl.loadUserByUsername(userEmail);
 
                 // 3. Validación y seteo de la autenticación
                 if (jwtUtils.isTokenValid(jwt)) {
@@ -67,11 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    logger.info("Usuario autenticado exitosamente: {}", userEmail);
+                    log.info("Usuario autenticado exitosamente: {}", userEmail);
                 }
             }
         } catch (Exception e) {
-            logger.error("No se pudo establecer la autenticación del usuario: {}", e.getMessage());
+            log.error("No se pudo establecer la autenticación del usuario: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
