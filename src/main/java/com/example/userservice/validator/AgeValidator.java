@@ -10,10 +10,10 @@ public class AgeValidator implements ConstraintValidator<ValidAge, LocalDate> {
     @Override
     public boolean isValid(LocalDate birthDate, ConstraintValidatorContext context) {
         if (birthDate == null) {
-            return false; // El @NotNull del DTO también ayuda aquí
+            return true; 
         }
 
-        // Calculamos la diferencia entre la fecha de nacimiento y hoy
+        // Se calcula la diferencia entre la fecha de nacimiento y hoy
         return Period.between(birthDate, LocalDate.now()).getYears() >= 18;
     }
 }

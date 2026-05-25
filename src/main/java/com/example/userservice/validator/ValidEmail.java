@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = EmailValidator.class)
 @Documented
 public @interface ValidEmail {
-    String message() default "El formato del texto no es válido";
+    String message() default "El formato del email no es válido";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
