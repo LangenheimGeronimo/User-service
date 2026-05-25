@@ -24,12 +24,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import com.example.userservice.model.dto.*;
 import com.example.userservice.model.enums.*;
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Usuarios", description = "Endpoints para la gestión de usuarios")
 public class UserController {
 	
@@ -41,6 +44,7 @@ public class UserController {
 	@ApiResponse(responseCode = "409", description = "El email ya se encuentra registrado")
 	@PostMapping
 	public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserCreateDTO dto){
+			log.info("Recibida petición para crear un usuario con email: {}", dto.email());
 			UserResponseDTO userCreado = service.createUser(dto);
 			return ResponseEntity.status(HttpStatus.CREATED).body(userCreado);
 	} 
@@ -50,6 +54,7 @@ public class UserController {
 	@ApiResponse(responseCode = "404", description = "Usuario no encontrado")
 	@GetMapping("/{idUser}")
 	public ResponseEntity<UserResponseDTO> getUser(@PathVariable Long idUser){
+		log.info("Recibida petición para obtener detalles del usuario ID: {}", idUser);
 		UserResponseDTO user = service.getUser(idUser);
 		return ResponseEntity.ok(user);
 	}
@@ -61,6 +66,7 @@ public class UserController {
 	@DeleteMapping("/{idUser}")
 	@PreAuthorize("hasRole('ADMIN') or #idUser == authentication.principal.id")
 	public ResponseEntity<Void> deleteUser(@PathVariable Long idUser) {
+		log.info("Recibida petición para eliminar lógicamente al usuario ID: {}", idUser);
 		service.deleteUser(idUser);
 		return ResponseEntity.noContent().build();
 	}
@@ -73,6 +79,7 @@ public class UserController {
 	@PutMapping("/{idUser}")
 	@PreAuthorize("hasRole('ADMIN') or #idUser == authentication.principal.id")
 	public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long idUser, @Valid @RequestBody UserUpdateDTO dto) {
+		log.info("Recibida petición para actualizar datos del usuario ID: {}", idUser);
 		UserResponseDTO user = service.editUser(idUser, dto);
 		return ResponseEntity.ok(user);
 	}
@@ -83,6 +90,7 @@ public class UserController {
 	@GetMapping("/email/{email}")
 	@PreAuthorize("hasRole('ADMIN') or #email == authentication.name")
 	public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email){
+		log.info("Recibida petición para buscar usuario por email: {}", email);
 		UserResponseDTO user = service.getUserByEmail(email);
 		return ResponseEntity.ok(user);
 	}
@@ -94,6 +102,7 @@ public class UserController {
 	@PatchMapping("/{idUser}/state/{newState}")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<Void> changeState(@PathVariable Long idUser, @PathVariable State newState){
+		log.info("Recibida petición de administrador para cambiar estado del usuario ID: {} a {}", idUser, newState);
 		service.changeState(idUser, newState);
 		return ResponseEntity.ok().build();	
 	}
@@ -134,6 +143,8 @@ public class UserController {
         @Parameter(hidden = true) 
         @PageableDefault(size = 10, sort = "id") Pageable pageable 
     ) {
+		log.info("Recibida petición de administrador para listar usuarios paginados con filtros -> Nombre: {}, Apellido: {}, Email: {}, Estado: {}", 
+                firstName, lastName, email, state);
         return ResponseEntity.ok(service.getUsers(firstName, lastName, email, state, pageable));
     }
 }
