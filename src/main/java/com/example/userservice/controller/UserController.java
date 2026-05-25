@@ -6,7 +6,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,19 +23,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import com.example.userservice.model.dto.*;
 import com.example.userservice.model.enums.*;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 @Tag(name = "Usuarios", description = "Endpoints para la gestión de usuarios")
 public class UserController {
 	
 	private final UserService service;
-	
-	public UserController(UserService service) {
-		this.service = service;
-	}
 
 	@Operation(summary = "Crea un nuevo usuario", description = "Registra un nuevo usuario en la base de datos")
     @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente")
@@ -91,7 +88,7 @@ public class UserController {
 	}
 
 	@Operation(summary = "cambia el estado", description = "Notifica el estado de un usuario")
-	@ApiResponse(responseCode = "200", description = "Usuarios obtenidos exitosamente")
+	@ApiResponse(responseCode = "200", description = "Estado actualizado exitosamente")
 	@ApiResponse(responseCode = "404", description = "El usuario no existe")
     @ApiResponse(responseCode = "400", description = "Estado no válido o error en la solicitud")
 	@PatchMapping("/{idUser}/state/{newState}")
@@ -101,7 +98,6 @@ public class UserController {
 		return ResponseEntity.ok().build();	
 	}
 	
-	//Metodo de busqueda por diversos filtros
 	@Operation(
         summary = "Obtener lista paginada de usuarios con filtros",
         description = "Permite al administrador buscar usuarios aplicando filtros opcionales por nombre, apellido, email o estado. Soporta paginación y ordenamiento."
