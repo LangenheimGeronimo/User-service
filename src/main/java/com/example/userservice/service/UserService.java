@@ -2,10 +2,8 @@ package com.example.userservice.service;
 
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.specification.UserSpecifications;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +28,11 @@ public class UserService {
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
 	
-	//POST
 	@Transactional
 	public UserResponseDTO createUser(UserCreateDTO dto) { 
+		if (dto == null) {
+            throw new IllegalArgumentException("El DTO de creación de usuario no puede ser nulo");
+        }
 		log.info("Intento de registro para el usuario con email: {}", dto.email());
 		if(userRepository.existsByEmail(dto.email())) {
 			throw new EmailAlreadyExistsException();
@@ -46,16 +46,24 @@ public class UserService {
 		return userMapper.toResponseDto(savedUser);
 	}
 	
-	//GET
 	public UserResponseDTO getUser(Long idUser) {
+		if (idUser == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo");
+        }
 		log.info("Intento de obtener por id: {}", idUser);
 		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 	    return userMapper.toResponseDto(user);
 	}
 	
-	// PUT
 	@Transactional
 	public UserResponseDTO editUser(Long idUser, UserUpdateDTO dto) {
+		if (dto == null) {
+            throw new IllegalArgumentException("El DTO de actualización no puede ser nulo");
+        }
+		if (idUser == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo");
+        }
+		
 		log.info("Intento de editar un usuario por id: {}", idUser);
 		
 		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
@@ -72,9 +80,11 @@ public class UserService {
 		return userMapper.toResponseDto(updatedUser);
 	}
 
-	//DELETE
 	@Transactional
 	public void deleteUser(Long idUser) {
+		if (idUser == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo");
+        }
 		log.info("Intento de borrar un usuario por id: {}", idUser);
 	    User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 
@@ -87,25 +97,34 @@ public class UserService {
     	userRepository.save(user);
 	}
 	
-	//GET
 	public State getState(Long idUser) {	
+		if (idUser == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo");
+        }
 		log.info("Intento de obtener un usuario por id: {}", idUser);
 		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 		State userState = user.getState();
 		return userState;
 	}
 	
-	//GET/email
 	public UserResponseDTO getUserByEmail(String email) {
+		if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El email de búsqueda no puede ser nulo o vacío");
+        }
 		log.info("Intento de obtener un usuario por email: {}", email);
 	    User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 		log.info("Usuario encontrado con email: {}", email);
 	    return userMapper.toResponseDto(user);
 	}
 
-	//EXTRA
 	@Transactional
 	public void changeState(Long idUser, State newState) {
+		if (idUser == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo");
+        }
+        if (newState == null) {
+            throw new IllegalArgumentException("El nuevo estado no puede ser nulo");
+        }
 		log.info("Intento de cambiar de estado de un usuario por id: {}", idUser);
 		User user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
 		
@@ -114,8 +133,10 @@ public class UserService {
 		log.info("Estado actualizado correctamente a {} para el usuario {}", newState, idUser);
 	}
 
-	//GET
 	public Page<UserResponseDTO> getUsers(String firstName, String lastName, String email, State state, Pageable pageable) {
+		if (pageable == null) {
+            throw new IllegalArgumentException("El parámetro Pageable no puede ser nulo");
+        }
 		log.info("Búsqueda avanzada de usuarios con filtros dinámicos");
 
 		Specification<User> spec = Specification.where(UserSpecifications.hasFirstName(firstName))
