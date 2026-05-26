@@ -9,8 +9,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = UsernameValidator.class)
 @Documented
 public @interface ValidName {
-    // Permitimos que el mensaje sea personalizable desde el DTO
-    String message() default "El formato del texto no es válido";
+    String message() default "El formato del nombre no es válido";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
