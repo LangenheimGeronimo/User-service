@@ -9,8 +9,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = PasswordValidator.class)
 @Documented
 public @interface ValidPassword {
-    // Permitimos que el mensaje sea personalizable desde el DTO
-    String message() default "El formato del texto no es válido";
+    String message() default "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
