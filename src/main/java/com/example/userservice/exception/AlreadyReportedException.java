@@ -1,7 +1,7 @@
 package com.example.userservice.exception;
 
 public class AlreadyReportedException extends RuntimeException{
-    // Visible desde los tests.
+    // Visible desde los tests
     public static final String DEFAULT_MESSAGE = "El usuario ya ha realizado una denuncia previa contra este perfil.";
 
     //Constructor por defecto
