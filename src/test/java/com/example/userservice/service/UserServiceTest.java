@@ -31,6 +31,7 @@ import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.mapper.UserMapper; 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import static org.mockito.ArgumentMatchers.notNull;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -48,6 +49,7 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
+    @SuppressWarnings("null")
     void createUser_ShouldEncryptPasswordAndSave_WhenUserIsValid() {
         UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", 
         "geronimo@email.com", "mipassword1234", 
@@ -65,18 +67,19 @@ class UserServiceTest {
         when(userRepository.existsByEmail("geronimo@email.com")).thenReturn((false));
         when(userMapper.toEntity(dto)).thenReturn((userEntity));
         when(passwordEncoder.encode(dto.password())).thenReturn(("passwordHash"));
-        when(userRepository.save(any(User.class))).thenReturn(savedUser); 
+        when(userRepository.save(notNull())).thenReturn(savedUser); 
         when(userMapper.toResponseDto(savedUser)).thenReturn(responseDTO);
         
         UserResponseDTO resultado = userService.createUser(dto);
 
         assertNotNull(resultado);
         assertEquals("Geronimo", resultado.firstName());
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(notNull());
         verify(passwordEncoder).encode("mipassword1234");
     }
 
     @Test
+    @SuppressWarnings("null")
     void saveUser_ShouldThrowException_WhenEmailAlreadyExists() {
         String emailDuplicado = "geronimo@email.com";
         UserCreateDTO dto = new UserCreateDTO("Geronimo", "Langenheim", 
@@ -129,6 +132,7 @@ class UserServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void editUser_ShouldReturnUpdatedUserResponseDTO_WhenUserExists() {
         UserUpdateDTO updateDto = new UserUpdateDTO("Geronimo", "Langenheim", LocalDate.of(2004, 4, 19));
         Long idUser = 1L;
@@ -143,7 +147,7 @@ class UserServiceTest {
                             LocalDate.of(2004, 4, 19), Role.USER, State.ACTIVE, List.of());
         
         when(userRepository.findById(idUser)).thenReturn(Optional.of(userEntity));
-        when(userRepository.save(any(User.class))).thenReturn(savedUser); 
+        when(userRepository.save(notNull())).thenReturn(savedUser); 
         when(userMapper.toResponseDto(savedUser)).thenReturn(responseDTO);
 
         UserResponseDTO resultado = userService.editUser(idUser, updateDto);
@@ -153,10 +157,11 @@ class UserServiceTest {
         
         verify(userRepository).findById(idUser);
         verify(userMapper).updateEntityFromDto(eq(updateDto), eq(userEntity)); 
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(notNull());
     }
 
     @Test
+    @SuppressWarnings("null")
     void editUser_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long idInexistente = 99L;
         UserUpdateDTO dto = new UserUpdateDTO("Nombre", "Apellido", LocalDate.of(2004, 4, 19));
@@ -170,10 +175,11 @@ class UserServiceTest {
 
         verify(userRepository, times(1)).findById(idInexistente);
         verify(userMapper, never()).updateEntityFromDto(any(), any());
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(notNull());
     }
 
     @Test
+    @SuppressWarnings("null")
     void editUser_ShouldThrowUserIsAlreadyDeletedException_WhenUserIsDeleted() {
         Long idUser = 1L;
         UserUpdateDTO dto = new UserUpdateDTO("Geronimo", "Langenheim", LocalDate.now());
@@ -184,7 +190,7 @@ class UserServiceTest {
         UserIsAlreadyDeletedException exception = assertThrows(UserIsAlreadyDeletedException.class, () -> userService.editUser(idUser, dto));
         assertEquals(UserIsAlreadyDeletedException.DEFAULT_MESSAGE, exception.getMessage());
 
-        verify(userRepository, never()).save(any());
+        verify(userRepository, never()).save(notNull());
     }
 
     @Test
@@ -202,6 +208,7 @@ class UserServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void deleteUser_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long idInexistente = 99L;
         when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
@@ -209,10 +216,11 @@ class UserServiceTest {
         UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userService.deleteUser(idInexistente));
         assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(notNull());
     }
 
     @Test
+    @SuppressWarnings("null")
     void deleteUser_ShouldThrowUserIsAlreadyDeletedException_WhenUserIsAlreadyDeleted() {
         Long idUser = 1L;
         User deletedUser = User.builder().id(idUser).state(State.DELETED).build();
@@ -222,7 +230,7 @@ class UserServiceTest {
         UserIsAlreadyDeletedException exception = assertThrows(UserIsAlreadyDeletedException.class, () -> userService.deleteUser(idUser));
         assertEquals(UserIsAlreadyDeletedException.DEFAULT_MESSAGE, exception.getMessage());
 
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(notNull());
     }
 
     @Test
@@ -298,6 +306,7 @@ class UserServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void changeState_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long idInexistente = 99L;
         State nuevoEstado = State.ACTIVE;
@@ -309,10 +318,11 @@ class UserServiceTest {
         assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, times(1)).findById(idInexistente);
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(notNull());
     }
 
     @Test
+    @SuppressWarnings({"null", "unchecked"})
     void getUsers_ShouldReturnPageOfUserResponseDTO_WhenFiltersAreApplied() {
         Pageable pageable = PageRequest.of(0, 10);
         User user = User.builder().id(1L).firstName("Geronimo").email("geronimo@email.com").build();
