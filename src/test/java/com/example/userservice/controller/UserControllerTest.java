@@ -16,16 +16,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
-
 import com.example.userservice.config.SecurityConfig;
 import com.example.userservice.exception.EmailAlreadyExistsException;
 import com.example.userservice.exception.InvalidStateException;
-import com.example.userservice.exception.SelfReportException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
 import com.example.userservice.model.dto.UserCreateDTO;
@@ -33,31 +30,23 @@ import com.example.userservice.model.dto.UserResponseDTO;
 import com.example.userservice.model.dto.UserUpdateDTO;
 import com.example.userservice.model.enums.Role;
 import com.example.userservice.model.enums.State;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import java.time.LocalDate;
 import java.util.List;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-
 import com.example.userservice.security.JwtAuthenticationFilter;
 import com.example.userservice.security.JwtUtils;
 import com.example.userservice.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -88,6 +77,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // Mockeamos el FilterChain para que deje pasar las peticiones simuladas de MockMvc sin trabarse en el filtro JWT
         doAnswer(invocation -> {
             HttpServletRequest request = invocation.getArgument(0);
             HttpServletResponse response = invocation.getArgument(1);
@@ -97,9 +87,9 @@ class UserControllerTest {
         }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
     }
 
-    //createUser
     @Test
     @WithMockUser 
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 201 al crear un user válido")
     void createUserTest() throws Exception {
         String userJson = """
@@ -123,6 +113,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser 
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 400 cuando los datos de entrada son inválidos (Password débil)")
     void createUser_BadRequest_InvalidPassword() throws Exception {
         String userJson = """
@@ -147,6 +138,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser 
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 409 cuando el email ya se encuentra registrado")
     void createUser_Conflict_EmailExists() throws Exception {
         String userJson = """
@@ -174,9 +166,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
-    //getUser:
     @Test
     @WithMockUser
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 200 al obtener un user por ID válido")
     void getUser_Success() throws Exception {
         Long idUser = 1L;
@@ -211,6 +203,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 404 cuando el usuario no existe")
     void getUser_NotFound() throws Exception {
         Long idInexistente = 99L;
@@ -224,9 +217,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").exists()); 
     }
 
-    //deleteUser: 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 204 al borrar un usuario")
     void deleteUser() throws Exception {
         Long idUser = 1L;
@@ -239,6 +232,7 @@ class UserControllerTest {
     
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 404 al borrar un usuario que no existe")
     void deleteUser_NotFound() throws Exception {
         Long idInexistente = 99L;
@@ -257,6 +251,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 410 al borrar un usuario que ya fue eliminado anteriormente")
     void deleteUser_IsGone() throws Exception {
         Long idInexistente = 99L;
@@ -273,9 +268,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
-    //updateUser:
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 200 al editar un usuario exitosamente")
     void updateUser() throws Exception {
         Long idUser = 1L;
@@ -313,9 +308,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("geronimo@email.com")); // La respuesta sigue trayendo el email, está perfecto
     }
 
-
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 400 al editar un usuario por datos de entrada invalidos")
     void updateUser_data_invalid() throws Exception {
         Long idUser = 1L;
@@ -339,9 +334,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors.firstName").exists()); 
     }
 
-
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 404 al no encontrar el id del usuario a editar")
     void updateUser_idNotValid() throws Exception {
         Long idUserInexistente = 99L;
@@ -368,11 +363,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
-
-    //getUserByEmail:
-
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 200 al obtener un user por email")
     void getUser_byEmail() throws Exception {
         String email = "geronimo@email.com";
@@ -403,6 +396,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 404 al no obtener el usuario")
     void getUser_byEmail_notFound() throws Exception {
         String email = "geronimo@email.com";
@@ -419,11 +413,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
-
-    //changeState:
-
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 200 al cambiar el estado del usuario exitosamente")
     void changeState_success() throws Exception {
         Long idUser = 1L;
@@ -438,6 +430,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 404 al intentar cambiar el estado de un usuario inexistente")
     void changeState_notFound() throws Exception {
         Long idInexistente = 99L;
@@ -457,6 +450,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 400 cuando ocurre un error en la solicitud de cambio de estado")
     void changeState_badRequest() throws Exception {
         Long idUser = 1L;
@@ -474,11 +468,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
-
-    //getUsers:
-
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 200 al obtener la lista pagitada de usuarios con filtros")
     void getUsers_success() throws Exception {
         UserResponseDTO userMock = new UserResponseDTO(
@@ -514,9 +506,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.totalElements").value(1));
     }
 
-
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("null")
     @DisplayName("Debe retornar 401 cuando el token JWT es inválido o expiró")
     void getUsers_unauthorized() throws Exception {
         doThrow(new BadCredentialsException("Error de autenticación: Token inválido"))
@@ -532,6 +524,7 @@ class UserControllerTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     @WithMockUser(roles = "USER") 
     @DisplayName("Debe retornar 403 cuando el usuario no tiene el rol de ADMIN")
     void getUsers_forbidden() throws Exception {
