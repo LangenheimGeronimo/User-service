@@ -336,7 +336,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("Error de validación"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").exists()) 
-                .andExpect(jsonPath("$.errors.firstName").exists()); // 👈 Ahora el error salta en firstName
+                .andExpect(jsonPath("$.errors.firstName").exists()); 
     }
 
 

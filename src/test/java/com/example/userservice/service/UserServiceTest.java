@@ -46,9 +46,6 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
-    
-
-    //createUser:
 
     @Test
     void createUser_ShouldEncryptPasswordAndSave_WhenUserIsValid() {
@@ -88,17 +85,16 @@ class UserServiceTest {
 
         when(userRepository.existsByEmail(emailDuplicado)).thenReturn(true);
 
-        assertThrows(EmailAlreadyExistsException.class, () -> {
+        EmailAlreadyExistsException exception = assertThrows(EmailAlreadyExistsException.class, () -> {
             userService.createUser(dto);
         });
+        assertEquals(EmailAlreadyExistsException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, never()).save(any(User.class));
         verify(passwordEncoder, never()).encode(anyString());
         verify(userMapper, never()).toEntity(any());
     }
 
-
-    //getUser:
     @Test
     void getUser_ShouldReturnUserResponseDTO_WhenUserExists() {
         Long idUser = 1L;
@@ -132,7 +128,6 @@ class UserServiceTest {
         verify(userMapper, never()).toResponseDto(any());
     }
 
-    //editUser:
     @Test
     void editUser_ShouldReturnUpdatedUserResponseDTO_WhenUserExists() {
         UserUpdateDTO updateDto = new UserUpdateDTO("Geronimo", "Langenheim", LocalDate.of(2004, 4, 19));
@@ -168,9 +163,10 @@ class UserServiceTest {
         
         when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> {
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
             userService.editUser(idInexistente, dto);
         });
+        assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, times(1)).findById(idInexistente);
         verify(userMapper, never()).updateEntityFromDto(any(), any());
@@ -185,13 +181,12 @@ class UserServiceTest {
 
         when(userRepository.findById(idUser)).thenReturn(Optional.of(deletedUser));
 
-        assertThrows(UserIsAlreadyDeletedException.class, () -> userService.editUser(idUser, dto));
+        UserIsAlreadyDeletedException exception = assertThrows(UserIsAlreadyDeletedException.class, () -> userService.editUser(idUser, dto));
+        assertEquals(UserIsAlreadyDeletedException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, never()).save(any());
     }
 
-
-    //deleteUser:
     @Test
     void deleteUser_ShouldChangeStateToDeletedAndSave_WhenUserExists() {
         Long idUser = 1L;
@@ -206,17 +201,16 @@ class UserServiceTest {
         verify(userRepository, times(1)).save(user); 
     }
 
-
     @Test
     void deleteUser_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long idInexistente = 99L;
         when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(idInexistente));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userService.deleteUser(idInexistente));
+        assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, never()).save(any(User.class));
     }
-
 
     @Test
     void deleteUser_ShouldThrowUserIsAlreadyDeletedException_WhenUserIsAlreadyDeleted() {
@@ -225,13 +219,12 @@ class UserServiceTest {
 
         when(userRepository.findById(idUser)).thenReturn(Optional.of(deletedUser));
 
-        assertThrows(UserIsAlreadyDeletedException.class, () -> userService.deleteUser(idUser));
+        UserIsAlreadyDeletedException exception = assertThrows(UserIsAlreadyDeletedException.class, () -> userService.deleteUser(idUser));
+        assertEquals(UserIsAlreadyDeletedException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, never()).save(any(User.class));
     }
 
-
-    //getUserByEmail:
     @Test
     void getState_ShouldReturnState_WhenUserExists() {
         Long idUser = 1L;
@@ -246,18 +239,16 @@ class UserServiceTest {
         verify(userRepository, times(1)).findById(idUser);
     }
 
-
     @Test
     void getState_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long idInexistente = 99L;
         when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getState(idInexistente));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userService.getState(idInexistente));
+        assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, times(1)).findById(idInexistente);
     }
-
-    //getUserByEmail:
 
     @Test
     void getUserByEmail_ShouldReturnUserResponseDTO_WhenEmailExists() {
@@ -279,20 +270,17 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByEmail(email);
     }
 
-
     @Test
     void getUserByEmail_ShouldThrowUserNotFoundException_WhenEmailDoesNotExist() {
         String emailInexistente = "noexiste@email.com";
         when(userRepository.findByEmail(emailInexistente)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUserByEmail(emailInexistente));
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userService.getUserByEmail(emailInexistente));
+        assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, times(1)).findByEmail(emailInexistente);
         verify(userMapper, never()).toResponseDto(any());
     }
-
-
-    //changeState:
 
     @Test
     void changeState_ShouldUpdateStateAndSave_WhenUserExists() {
@@ -315,15 +303,14 @@ class UserServiceTest {
         State nuevoEstado = State.ACTIVE;
         when(userRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> 
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> 
             userService.changeState(idInexistente, nuevoEstado)
         );
+        assertEquals(UserNotFoundException.DEFAULT_MESSAGE, exception.getMessage());
 
         verify(userRepository, times(1)).findById(idInexistente);
         verify(userRepository, never()).save(any(User.class));
     }
-
-    //getUsers:
 
     @Test
     void getUsers_ShouldReturnPageOfUserResponseDTO_WhenFiltersAreApplied() {
