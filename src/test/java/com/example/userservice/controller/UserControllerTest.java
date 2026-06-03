@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import com.example.userservice.config.SecurityConfig;
 import com.example.userservice.exception.EmailAlreadyExistsException;
+import com.example.userservice.exception.GlobalExceptionHandler;
 import com.example.userservice.exception.InvalidStateException;
 import com.example.userservice.exception.UserIsAlreadyDeletedException;
 import com.example.userservice.exception.UserNotFoundException;
@@ -51,7 +52,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @WebMvcTest(UserController.class) 
-@Import(SecurityConfig.class) 
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class UserControllerTest {
 
     @Autowired
@@ -161,7 +162,7 @@ class UserControllerTest {
                 .content(userJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("El email ya se encuentra registrado en el sistema."))
+                .andExpect(jsonPath("$.message").value("El email ya se encuentra registrado."))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
@@ -178,7 +179,7 @@ class UserControllerTest {
             "Geronimo",
             "Langenheim",
             "geronimo@email.com",
-            LocalDate.of(2004, 4, 19), // 19/04/2004
+            LocalDate.of(2004, 4, 19), 
             Role.USER,
             State.ACTIVE,
             List.of(101L, 102L) 
@@ -244,7 +245,7 @@ class UserControllerTest {
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
@@ -263,7 +264,7 @@ class UserControllerTest {
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isGone())
-                .andExpect(jsonPath("$.message").value("La cuenta se encuentra inhabilitada.")) 
+                .andExpect(jsonPath("$.message").value("La cuenta se encuentra inhabilitada")) 
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
@@ -358,7 +359,7 @@ class UserControllerTest {
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
@@ -408,7 +409,7 @@ class UserControllerTest {
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Usuario no encontrado."))
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.errors").doesNotExist());
     }
@@ -436,7 +437,7 @@ class UserControllerTest {
         Long idInexistente = 99L;
         State newState = State.ACTIVE;
 
-        doThrow(new UserNotFoundException()).when(userService).changeState(idInexistente, newState);
+        doThrow(new UserNotFoundException("Usuario no encontrado.")).when(userService).changeState(any(), any());
 
         mockMvc.perform(patch("/users/{idUser}/state/{newState}", idInexistente, newState)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -464,7 +465,7 @@ class UserControllerTest {
                 .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("El estado enviado no es válido para esta operación."))
+                .andExpect(jsonPath("$.message").value("El estado enviado no es válido para esta operación"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
