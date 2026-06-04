@@ -3,7 +3,7 @@ package com.example.userservice.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -13,25 +13,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.security.access.AccessDeniedException;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // MANEJO DE VALIDACIONES 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    Map<String, String> errors = new HashMap<>();
-    
-    ex.getBindingResult().getFieldErrors().forEach((error) -> {
-        errors.put(error.getField(), error.getDefaultMessage());
-    });
-    
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(new ErrorResponse("Error de validación", LocalDateTime.now(), errors));
+        Map<String, String> errors = new HashMap<>();
+        
+        ex.getBindingResult().getFieldErrors().forEach((error) -> {
+            errors.put(error.getField(), error.getDefaultMessage());
+        });
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse("Error de validación", LocalDateTime.now(), errors));
     }
 
-    // MANEJO DE SISTEMA GENERAL
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         logger.error("Error no controlado detectado: ", ex);
@@ -39,9 +37,6 @@ public class GlobalExceptionHandler {
                              .body(new ErrorResponse("Ocurrió un error inesperado, intente más tarde", LocalDateTime.now()));
     }
 
-    //MANEJOS DE PERSONALIZADOS:  
-
-    // MANEJO DE EXISTENCIA DE EMAIL (Negocio)
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailDuplicate(EmailAlreadyExistsException ex) {
         logger.warn("Recurso ya existente: {}", ex.getMessage());
@@ -50,7 +45,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
-    // MANEJO DE USUARIO ELIMINADO ANTERIORMENTE (Negocio)
     @ExceptionHandler(UserIsAlreadyDeletedException.class)
     public ResponseEntity<ErrorResponse> handleUserEliminated(UserIsAlreadyDeletedException ex){
         logger.warn("Recurso ya eliminado: {}", ex.getMessage());
@@ -59,21 +53,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
-    // MANEJO DE USUARIO NO ENCONTRADO (NEGOCIO)
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(UserNotFoundException ex) {
         logger.warn("Recurso no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
-    //MANEJO DE REPORTE NO EJECUTADO (NEGOCIO)
     @ExceptionHandler(AlreadyReportedException.class)
     public ResponseEntity<ErrorResponse> handleBadReport(AlreadyReportedException ex){
         logger.warn("Conflicto en reporte: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
-    // MANEJO DE CREDENCIALES ERRONEAS (SEGURIDAD)
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
     logger.error("Error de autenticación: {}", ex.getMessage());
@@ -84,7 +75,6 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED); // El 401 es el correcto para login fallido
     }
 
-    // MANEJO DE ACCESO DENEGADO - RECURSO PROHIBIDO (SEGURIDAD)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
         logger.warn("Acceso denegado: {}", ex.getMessage());
@@ -95,7 +85,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403 Forbidden
     }
 
-    //MANEJO DE AUTOREPORTE
     @ExceptionHandler(SelfReportException.class)
     public ResponseEntity<ErrorResponse> handleSelfReport(SelfReportException ex) {
         logger.warn("Intento de autoreporte denegado: {}", ex.getMessage());
@@ -106,7 +95,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    // MANEJO DE RECURSO NO ENCONTRADO (NEGOCIO/GENERAL)
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         logger.warn("Recurso solicitado no existe: {}", ex.getMessage());
@@ -115,7 +103,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
-    //MANEJO DE ESTADO INVALIDADO
     @ExceptionHandler(InvalidStateException.class)
     public ResponseEntity<ErrorResponse> handleInvalidState(InvalidStateException ex) {
         logger.warn("Estado inválido: {}", ex.getMessage());
