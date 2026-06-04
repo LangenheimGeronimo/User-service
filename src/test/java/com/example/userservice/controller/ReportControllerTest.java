@@ -69,8 +69,6 @@ class ReportControllerTest {
         }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
     }
 
-    // --- MÉTODOS DE CREACIÓN (POST) ---
-
     @Test
     @WithMockUser(username = "gero@test.com")
     @DisplayName("Debe retornar 201 al crear un reporte válido")
@@ -130,10 +128,8 @@ class ReportControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(selfReportJson))
                 .andExpect(status().isBadRequest()) 
-                .andExpect(jsonPath("$.message").value("Un usuario no puede denunciarse a sí mismo."));
+                .andExpect(jsonPath("$.message").value("Un usuario no puede denunciarse a sí mismo"));
     }
-
-    // --- MÉTODOS DE ELIMINACIÓN (DELETE) ---
 
     @Test
     @WithMockUser(roles = "ADMIN")

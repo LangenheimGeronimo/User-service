@@ -176,7 +176,6 @@ class ReportServiceTest {
 
         when(userRepository.findByEmail(reporterEmail)).thenReturn(Optional.of(reporter));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reportedAdmin));
-        //when(reportRepository.countByReportedUserId(2L)).thenReturn(5L); 
 
         reportService.addReport(dto, reporterEmail);
 
