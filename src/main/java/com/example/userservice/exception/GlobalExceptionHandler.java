@@ -68,38 +68,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
     logger.error("Error de autenticación: {}", ex.getMessage());
-    ErrorResponse error = new ErrorResponse(
-        ex.getMessage(),
-        LocalDateTime.now()
-    );
-    return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED); // El 401 es el correcto para login fallido
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
         logger.warn("Acceso denegado: {}", ex.getMessage());
-        ErrorResponse error = new ErrorResponse(
-            ex.getMessage(), 
-            LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403 Forbidden
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(SelfReportException.class)
     public ResponseEntity<ErrorResponse> handleSelfReport(SelfReportException ex) {
         logger.warn("Intento de autoreporte denegado: {}", ex.getMessage());
-        ErrorResponse error = new ErrorResponse(
-            ex.getMessage(), 
-            LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         logger.warn("Recurso solicitado no existe: {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(ex.getMessage(), LocalDateTime.now()));
     }
 
