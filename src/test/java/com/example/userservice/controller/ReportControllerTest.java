@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @ActiveProfiles("test")
 @WebMvcTest(ReportController.class) 
 @Import(SecurityConfig.class) 
+@SuppressWarnings("null")
 class ReportControllerTest {
 
     @Autowired
