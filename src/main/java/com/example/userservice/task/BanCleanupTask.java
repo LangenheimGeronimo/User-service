@@ -32,10 +32,9 @@ public class BanCleanupTask {
         expiredBans.forEach(user -> {
             user.setState(State.ACTIVE);
             user.setBanUntil(null);
-            userRepository.save(user);
             log.info("User {} has been automatically unbanned.", user.getEmail());
         });
-
+        log.info("Auto-unban task finished. Total users unbanned: {}", expiredBans.size());
     }
 
 }
