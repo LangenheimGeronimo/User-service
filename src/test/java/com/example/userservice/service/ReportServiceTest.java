@@ -30,6 +30,7 @@ import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.UserStatusHistoryRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class ReportServiceTest {
 
     @Mock
@@ -56,8 +57,6 @@ class ReportServiceTest {
                             .build();
                 });
     }
-
-    //addReport:
 
     @Test
     void addReport_ShouldSaveReportAndNotBan_WhenReportsUnderLimit() {
@@ -113,7 +112,6 @@ class ReportServiceTest {
         verify(reportRepository, never()).save(any());
     }
 
-
     @Test
     void addReport_ShouldThrowException_WhenReporterNotFound() {
         String emailInexistente = "email@test.com";
@@ -128,7 +126,6 @@ class ReportServiceTest {
 
         verify(reportRepository, never()).save(any());
     }
-
 
     @Test
     void addReport_ShouldThrowAlreadyReportedException_WhenReportAlreadyExists() {
@@ -150,7 +147,6 @@ class ReportServiceTest {
         verify(reportRepository, never()).save(any(Report.class));
     }
 
-
     @Test
     void addReport_ShouldBanUser_WhenReportsReachLimit() {
         String reporterEmail = "reporter@test.com";
@@ -170,7 +166,6 @@ class ReportServiceTest {
         verify(notificationService).sendStatusChangeNotification(any(), any(), any());
     }
 
-
     @Test
     void addReport_ShouldNotBanAdmin_EvenIfReportsReachLimit() {
         String reporterEmail = "reporter@test.com";
@@ -189,8 +184,6 @@ class ReportServiceTest {
         verify(userRepository, never()).save(reportedAdmin);
         assert(reportedAdmin.getState() == State.ACTIVE);
     }
-
-    //deleteReportById
 
     @Test
     void deleteReportById_ShouldReactivateUser_WhenReportsDropBelowLimit() {
@@ -225,7 +218,6 @@ class ReportServiceTest {
         verify(reportRepository, never()).delete(any());
     }
 
-
     @Test
     void deleteReportById_ShouldDeleteSuccessfully_AndKeepUserBannedIfReportsStillHigh() {
         Long reportId = 10L;
@@ -245,7 +237,6 @@ class ReportServiceTest {
         verify(userRepository, never()).save(any(User.class)); 
         assert(reported.getState() == State.BANNED); 
     }
-
 
 
 }
