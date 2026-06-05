@@ -21,20 +21,20 @@ public class BanCleanupTask {
     @Transactional
     public void autoUnbanUsers() {
 
-        log.info("Running auto-unban task...");
+        log.info("Ejecutando tarea de desbaneo automático...");
         List<User> expiredBans = userRepository.findExpiredBans(State.BANNED);
 
         if (expiredBans.isEmpty()) {
-            log.info("No expired bans found.");
+            log.info("No se encontraron baneos expirados.");
             return;
         }
 
         expiredBans.forEach(user -> {
             user.setState(State.ACTIVE);
             user.setBanUntil(null);
-            log.info("User {} has been automatically unbanned.", user.getEmail());
+            log.info("El usuario {} ha sido desbaneado automáticamente.", user.getEmail());
         });
-        log.info("Auto-unban task finished. Total users unbanned: {}", expiredBans.size());
+        log.info("Tarea de desbaneo automático finalizada. Total de usuarios desbaneados: {}", expiredBans.size());
     }
 
 }
