@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,7 +147,7 @@ class ReportServiceTest {
 
         verify(reportRepository, never()).save(any(Report.class));
     }
-
+    
     @Test
     void addReport_ShouldBanUser_WhenReportsReachLimit() {
         String reporterEmail = "reporter@test.com";
@@ -154,6 +155,7 @@ class ReportServiceTest {
         User reporter = User.builder().id(1L).email(reporterEmail).build();
         User reported = User.builder().id(2L).role(Role.USER).state(State.ACTIVE).build();
 
+        doNothing().when(notificationService).sendStatusChangeNotification(any(), any(), any());
         when(userRepository.findByEmail(reporterEmail)).thenReturn(Optional.of(reporter));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reported));
         when(reportRepository.existsByReporterUserIdAndReportedUserId(1L, 2L)).thenReturn(false);
@@ -191,6 +193,9 @@ class ReportServiceTest {
         User reported = User.builder().id(reportedUserId).role(Role.USER).state(State.BANNED).build();
         Report report = Report.builder().id(reportId).reportedUserId(reportedUserId).build();
 
+        doNothing().when(reportRepository).delete(report);
+        doNothing().when(notificationService).sendStatusChangeNotification(any(), any(), any());
+
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(userRepository.findById(reportedUserId)).thenReturn(Optional.of(reported));
         when(reportRepository.countByReportedUserId(reportedUserId)).thenReturn(1L);
@@ -223,6 +228,9 @@ class ReportServiceTest {
         Long reportedUserId = 2L;
         User reported = User.builder().id(reportedUserId).role(Role.USER).state(State.BANNED).build();
         Report report = Report.builder().id(reportId).reportedUserId(reportedUserId).build();
+
+        doNothing().when(reportRepository).delete(report);
+        doNothing().when(reportRepository).flush();
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         when(userRepository.findById(reportedUserId)).thenReturn(Optional.of(reported));
