@@ -145,7 +145,8 @@ class UserServiceTest {
         UserResponseDTO responseDTO = new UserResponseDTO(1L, "Geronimo", 
                             "Langenheim", "geronimo@email.com", 
                             LocalDate.of(2004, 4, 19), Role.USER, State.ACTIVE, List.of());
-        
+
+        doNothing().when(userMapper).updateEntityFromDto(eq(updateDto), eq(userEntity));
         when(userRepository.findById(idUser)).thenReturn(Optional.of(userEntity));
         when(userRepository.save(notNull())).thenReturn(savedUser); 
         when(userMapper.toResponseDto(savedUser)).thenReturn(responseDTO);
