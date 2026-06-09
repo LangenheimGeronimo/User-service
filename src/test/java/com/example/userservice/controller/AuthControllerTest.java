@@ -61,4 +61,20 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.email").value("geronimo@email.com"))
                 .andExpect(jsonPath("$.firstName").value("Geronimo"));
     }
+
+    @Test
+    @DisplayName("Debe retornar 400 Bad Request cuando el DTO de registro tiene datos inválidos")
+    @SuppressWarnings("null")
+    void register_ShouldReturn400_WhenDataIsInvalid() throws Exception {
+        // Arrange - Mandamos un email inválido para que salte la validación
+        RegisterDTO invalidDto = new RegisterDTO(
+            "Geronimo", "Langenheim", "email_malo_sin_arroba", "mipassword1234", LocalDate.of(2004, 4, 19)
+        );
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest()); // Se frena antes de tocar el servicio
+    }
 }

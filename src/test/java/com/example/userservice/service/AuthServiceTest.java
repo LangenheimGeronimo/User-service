@@ -1,5 +1,6 @@
 package com.example.userservice.service;
 
+import com.example.userservice.exception.EmailAlreadyExistsException;
 import com.example.userservice.model.dto.RegisterDTO;
 import com.example.userservice.model.dto.UserCreateDTO;
 import com.example.userservice.model.dto.UserResponseDTO;
@@ -56,5 +57,20 @@ public class AuthServiceTest {
         
         UserCreateDTO capturedCreateDto = captor.getValue();
         assertEquals(Role.USER, capturedCreateDto.role(), "El rol debe ser estrictamente USER");
+    }
+
+    @Test
+    @DisplayName("Debe lanzar una excepción si el email ya se encuentra registrado")
+    void register_ShouldThrowException_WhenEmailAlreadyExists() {
+        RegisterDTO registerDto = new RegisterDTO(
+            "Geronimo", "Langenheim", "duplicado@email.com", "mipassword1234", LocalDate.of(2004, 4, 19)
+        );
+
+        when(userService.createUser(any(UserCreateDTO.class)))
+            .thenThrow(new EmailAlreadyExistsException()); 
+
+        assertThrows(EmailAlreadyExistsException.class, () -> {
+            authService.register(registerDto);
+        });
     }
 }
