@@ -77,34 +77,33 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("Debe retornar 201 Created al registrar un usuario con datos válidos")
-    @SuppressWarnings("null")
-    void register_ShouldReturn201_WhenDataIsValid() throws Exception {
-        RegisterDTO registerDto = new RegisterDTO(
-            "Geronimo", "Langenheim", "geronimo@email.com", "mipassword1234", LocalDate.of(2004, 4, 19)
-        );
-        
-        UserResponseDTO expectedResponse = new UserResponseDTO(
-            1L, 
-            "Geronimo", 
-            "Langenheim", 
-            "geronimo@email.com", 
-            LocalDate.of(2004, 4, 19), 
-            Role.USER, 
-            State.ACTIVE, 
-            List.of()
-        );
+@DisplayName("Debe retornar 201 Created al registrar un usuario con datos válidos")
+@SuppressWarnings("null")
+void register_ShouldReturn201_WhenDataIsValid() throws Exception {
+    String validJson = """
+        {
+            "firstName": "Geronimo",
+            "lastName": "Langenheim",
+            "email": "geronimo@email.com",
+            "password": "SecurePass123!",
+            "birthDate": "19/04/2004"
+        }
+        """;
+    
+    UserResponseDTO expectedResponse = new UserResponseDTO(
+        1L, "Geronimo", "Langenheim", "geronimo@email.com", LocalDate.of(2004, 4, 19), Role.USER, State.ACTIVE, List.of()
+    );
 
-        when(authService.register(any(RegisterDTO.class))).thenReturn(expectedResponse);
+    when(authService.register(any(RegisterDTO.class))).thenReturn(expectedResponse);
 
-        mockMvc.perform(post("/api/v1/auth/register")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerDto))) 
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("geronimo@email.com"))
-                .andExpect(jsonPath("$.firstName").value("Geronimo"));
-    }
+    mockMvc.perform(post("/api/v1/auth/register")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(validJson)) 
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.email").value("geronimo@email.com"))
+            .andExpect(jsonPath("$.firstName").value("Geronimo"));
+}
     
     @Test
     @DisplayName("Debe retornar 400 Bad Request cuando el DTO de registro tiene datos inválidos")
