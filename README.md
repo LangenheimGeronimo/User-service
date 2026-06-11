@@ -6,9 +6,9 @@ El servicio está construido con un enfoque en el alto rendimiento, aplicando se
 
 ---
 
-## 🛠️ Tecnologías y Arquitectura
+## Tecnologías y Arquitectura
 
-El diseño de este microservicio se apoya en un stack moderno y robusto dentro del ecosistema de Java, enfocado en mantener un código limpio, mantenible y testeable:
+El diseño de este microservicio se apoya en un stack moderno y robusto dentro del ecosistema de Java, enfocado en mantener un código limpio y mantenible:
 
 * **Java 21 & Spring Boot 3.x:** Uso de las últimas características del lenguaje y el framework para un desarrollo eficiente.
 * **Spring Security & JWT (JSON Web Tokens):** Seguridad stateless para proteger los endpoints y gestionar los roles de acceso de manera descentralizada.
@@ -20,7 +20,7 @@ El diseño de este microservicio se apoya en un stack moderno y robusto dentro d
 
 ---
 
-## ⚙️ Funcionalidades del Sistema
+## Funcionalidades del Sistema
 
 * **Registro de Usuarios:** Validación estricta de campos obligatorios, formato de correo, contraseñas de alta seguridad y control de mayoría de edad.
 * **Control de Estado de Cuentas:** Soporte nativo para estados activos, inactivos y baneados.
@@ -28,10 +28,11 @@ El diseño de este microservicio se apoya en un stack moderno y robusto dentro d
 * **Lógica de Bloqueo Integrada:** Capacidad para procesar suspensiones automáticas de cuentas basadas en el comportamiento o reportes del sistema.
 * **Consultas Dinámicas:** Filtrado avanzado a la base de datos utilizando JPA Specifications (Criteria API).
 * **Procesamiento Asíncrono:** Tareas programadas (Scheduled Tasks) para el mantenimiento autónomo del sistema.
+* **Configuración CORS:** Políticas de seguridad implementadas de forma nativa para permitir la comunicación cruzada y segura con clientes frontend.
 
 ---
 
-## 🚀 Instalación y Ejecución
+## Instalación y Ejecución
 
 ### Requisitos Previos
 * **Docker** (Recomendado para levantar todo el entorno)
