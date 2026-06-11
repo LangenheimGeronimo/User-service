@@ -46,3 +46,13 @@ El diseño de este microservicio se apoya en un stack moderno y robusto dentro d
    ```bash
    ./gradlew bootRun
    ```
+
+---
+
+## Roadmap y Mejoras de Arquitectura
+
+Proyecciones planeadas para elevar la robustez y escalabilidad del microservicio:
+
+* [ ] **Optimización de Mapeos Relacionales:** Incorporación de estrategias `FetchType.LAZY` en relaciones `@ManyToOne` complejas para mitigar el problema de consultas N+1 y optimizar el consumo de memoria.
+* [ ] **Automatización de Auditoría:** Migración del registro de historial hacia **Spring Data JPA Auditing** (`@CreatedDate`, `@LastModifiedBy`) para estandarizar el tracking de entidades a nivel empresarial.
+* [ ] **Arquitectura Orientada a Eventos:** Integración de un broker de mensajería (RabbitMQ/Kafka) o un cliente de correo asíncrono para desacoplar las notificaciones del flujo principal de negocio.
